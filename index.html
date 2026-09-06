@@ -76,7 +76,7 @@
     // =========================================================================
     // AUTHENTIC OFFICIAL AGROVENTURES COMPANY LOGO COMPONENT
     // =========================================================================
-    function AgroventuresPremierLogo({ className = "h-8 sm:h-10 w-auto", showSubtitle = true, showTagline = true, isDark = true, compactMobile = false }) {
+    function AgroventuresPremierLogo({ className = "h-12 sm:h-16 w-auto", isDark = true }) {
       const [imgSrc, setImgSrc] = useState("./Assets/Agroventures_Premier_Logo_Transparent.png");
       const [loadFailed, setLoadFailed] = useState(false);
 
@@ -93,21 +93,15 @@
       };
 
       return (
-        <div className={`inline-flex items-center gap-2 select-none ${className}`}>
+        <div className="inline-flex items-center select-none">
           {!loadFailed ? (
-            <div className="flex items-center">
-              {/* Luxury dark glass badge holding the authentic silver chrome corporate logo */}
-              <div className="bg-zinc-900/90 dark:bg-zinc-900/80 px-2.5 sm:px-3 py-1 rounded-xl shadow-sm border border-zinc-700/60 flex items-center justify-center transition-transform hover:scale-105">
-                <img 
-                  src={imgSrc} 
-                  alt="Agroventures Premier" 
-                  className="h-6 sm:h-7 md:h-8 w-auto object-contain max-w-[200px] sm:max-w-[290px]"
-                  onError={handleImageError}
-                />
-              </div>
-            </div>
+            <img 
+              src={imgSrc} 
+              alt="Agroventures Premier - Group Premier Service Provider" 
+              className={`${className} object-contain transition-transform duration-300 hover:scale-105 drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]`}
+              onError={handleImageError}
+            />
           ) : (
-            /* Resilient SVG fallback if image file is not found */
             <div className="flex items-center gap-2 bg-emerald-950/20 px-3 py-1.5 rounded-xl border border-emerald-500/30">
               <span className="text-xl">🌿</span>
               <div className="flex flex-col">
@@ -453,15 +447,15 @@
           
           {/* Top Header Bar */}
           <header className="no-print border-b border-zinc-200 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-925/95 backdrop-blur sticky top-0 z-40 shadow-sm transition-colors">
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 sm:h-18 py-2 flex items-center justify-between gap-2 sm:gap-3">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 h-20 sm:h-24 py-2 flex items-center justify-between gap-2 sm:gap-4">
               
-              {/* Logo Area (Adaptive compact for mobile, full for desktop) */}
-              <div className="flex items-center gap-2">
+              {/* Logo Area (Directly embedded transparent brandmark, big and nice) */}
+              <div className="flex items-center cursor-pointer py-1" onClick={() => setViewMode('analytics')}>
                 <div className="sm:hidden">
-                  <AgroventuresPremierLogo className="h-9 w-auto" isDark={isDark} compactMobile={true} />
+                  <AgroventuresPremierLogo className="h-12 w-auto max-w-[260px]" isDark={isDark} />
                 </div>
                 <div className="hidden sm:block">
-                  <AgroventuresPremierLogo className="h-11 w-auto" isDark={isDark} compactMobile={false} />
+                  <AgroventuresPremierLogo className="h-16 md:h-18 lg:h-20 w-auto max-w-[380px] md:max-w-[500px] lg:max-w-[620px]" isDark={isDark} />
                 </div>
               </div>
 
@@ -1731,7 +1725,7 @@
       return (
         <div className="space-y-3 sm:space-y-4">
           <div className="flex justify-between items-center">
-            <AgroventuresPremierLogo className="h-8 sm:h-11" isDark={isDark} compactMobile={true} />
+            <AgroventuresPremierLogo className="h-16 sm:h-20 md:h-24 w-auto max-w-[340px] sm:max-w-[540px]" isDark={isDark} />
             <span className="text-[9px] sm:text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold">
               Master Edition 2026 V2
             </span>
