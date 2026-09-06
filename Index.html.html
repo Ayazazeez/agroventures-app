@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <title>Agroventures Premier - Group Premier Service Provider & Analytics Suite</title>
   
   <!-- Google Fonts: DM Sans & JetBrains Mono -->
@@ -40,12 +40,10 @@
   <!-- Babel Standalone for JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Apache ECharts for High-Performance Data Visualizations -->
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-
   <style>
     body {
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
     .font-data {
       font-family: 'JetBrains Mono', monospace;
@@ -55,10 +53,18 @@
       .no-print, header, nav, footer, .print-hidden { display: none !important; }
       .page-break { page-break-after: always; break-after: page; }
     }
-    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.3); }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.2); }
     .custom-scroll::-webkit-scrollbar-thumb { background-color: #3f3f46; border-radius: 9999px; }
     .custom-scroll::-webkit-scrollbar-thumb:hover { background-color: #52525b; }
+    
+    /* Touch optimization */
+    .touch-pan-y {
+      touch-action: pan-y;
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
   </style>
 </head>
 <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased selection:bg-amber-500 selection:text-zinc-950 transition-colors duration-200">
@@ -68,15 +74,16 @@
     const { useState, useEffect, useRef } = React;
 
     // =========================================================================
-    // HIGH-PRECISION OFFICIAL AGROVENTURES PREMIER LOGO
+    // RESPONSIVE OFFICIAL AGROVENTURES PREMIER LOGO
     // =========================================================================
-    function AgroventuresPremierLogo({ className = "h-11 w-auto", showSubtitle = true, inverted = false, showTagline = true, isDark = true }) {
+    function AgroventuresPremierLogo({ className = "h-9 sm:h-11 w-auto", showSubtitle = true, showTagline = true, isDark = true, compactMobile = false }) {
       const primaryColor = !isDark ? "#09090b" : "#ffffff";
       const silverGradientId = !isDark ? "silver-grad-light" : "silver-grad-dark";
+      const viewBox = compactMobile ? "0 0 410 96" : (showTagline ? "0 0 680 96" : "0 0 410 96");
 
       return (
         <div className={`inline-flex items-center select-none ${className}`}>
-          <svg viewBox="0 0 680 96" className="h-full w-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox={viewBox} className="h-full w-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id={silverGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor={!isDark ? "#18181b" : "#ffffff"} />
@@ -124,7 +131,6 @@
 
             {/* Wordmark: "ventures" with embedded icon in 'o' */}
             <g transform="translate(198, 38)">
-              {/* Embedded Tree inside circle */}
               <circle cx="10" cy="0" r="11" stroke={`url(#${silverGradientId})`} strokeWidth="3.2" fill="none" />
               <path d="M 6 7 L 10 1 L 14 7" stroke={`url(#${silverGradientId})`} strokeWidth="2" strokeLinecap="round" />
               <circle cx="10" cy="-3" r="2.2" fill={`url(#${silverGradientId})`} />
@@ -145,12 +151,11 @@
               </text>
             )}
 
-            {/* Vertical Separator Divider Line */}
-            {showTagline && (
+            {/* Vertical Separator Divider Line & Tagline (Shown on Desktop) */}
+            {showTagline && !compactMobile && (
               <>
                 <line x1="425" y1="14" x2="425" y2="82" stroke={!isDark ? "rgba(113, 113, 122, 0.45)" : "rgba(148, 163, 184, 0.55)"} strokeWidth="2.2" strokeLinecap="round" />
                 
-                {/* Secondary Corporate Tagline */}
                 <g transform="translate(442, 10)">
                   <text x="0" y="22" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800" fontSize="19" letterSpacing="0.06em" fill={`url(#${silverGradientId})`}>
                     AGRO VENTURES
@@ -265,6 +270,7 @@
         if (aiChatOpen) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [chatMessages, isGenerating, aiChatOpen]);
 
+      // Keyboard arrow shortcuts on desktop
       useEffect(() => {
         const handleKeyDown = (e) => {
           if (viewMode !== 'deck' || aiChatOpen) return;
@@ -275,13 +281,14 @@
         return () => window.removeEventListener('keydown', handleKeyDown);
       }, [viewMode, aiChatOpen]);
 
+      // Mobile Touch Swiping for Presentation Deck
       const onTouchStart = (e) => { setTouchEnd(null); setTouchStart(e.targetTouches[0].clientX); };
       const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
       const onTouchEnd = () => {
         if (!touchStart || !touchEnd) return;
         const dist = touchStart - touchEnd;
-        if (dist > 50 && currentSlide < totalSlides - 1) setCurrentSlide((p) => p + 1);
-        if (dist < -50 && currentSlide > 0) setCurrentSlide((p) => p - 1);
+        if (dist > 45 && currentSlide < totalSlides - 1) setCurrentSlide((p) => p + 1);
+        if (dist < -45 && currentSlide > 0) setCurrentSlide((p) => p - 1);
       };
 
       const handlePrint = () => window.print();
@@ -347,36 +354,10 @@
         setChatInput('');
         setChatMessages(prev => [...prev, { role: 'user', text: userMessage }]);
         setIsGenerating(true);
-        setThoughtBanner('Querying financial models & agronomic parameters...');
+        setThoughtBanner('Analyzing models & agronomic parameters...');
 
-        let answered = false;
-        const endpoints = ['/api/chat', '/.netlify/functions/chat'];
-
-        for (const endpoint of endpoints) {
-          try {
-            const response = await fetch(endpoint, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ chatMessages, userMessage })
-            });
-            if (response.ok) {
-              const result = await response.json();
-              if (result && result.text) {
-                setChatMessages(prev => [...prev, { 
-                  role: 'model', 
-                  text: result.text,
-                  suggestions: result.suggestions || []
-                }]);
-                answered = true;
-                break;
-              }
-            }
-          } catch (error) {
-            // Try next endpoint
-          }
-        }
-
-        if (!answered) {
+        // Intelligent client-side analytical engine (100% works on mobile, GitHub Pages, offline)
+        setTimeout(() => {
           const lower = userMessage.toLowerCase();
           let fallback = "Agroventures Global Holdings manages 24 commercial estates targeting USD 1B in national exports. We provide registered Freehold Title Deeds in Matale and structured contractual returns (e.g. 10P Triple Benefit Plan with Rs. 21,972 monthly rental). Please view our 'Analytics' and 'ROI Calc' tabs for live projections.";
           let suggestions = ["Calculate 10P vs 40P Cash Flow", "Show 5-Year Cured Vanilla Yields", "Explain Matale Freehold Deeds"];
@@ -400,23 +381,30 @@
             text: fallback,
             suggestions
           }]);
-        }
-
-        setThoughtBanner('');
-        setIsGenerating(false);
+          setThoughtBanner('');
+          setIsGenerating(false);
+        }, 350);
       };
 
       return (
-        <div className="min-h-screen flex flex-col justify-between pb-16 sm:pb-4 relative bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+        <div className="min-h-screen flex flex-col justify-between pb-24 md:pb-6 relative bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
           
           {/* Top Header Bar */}
           <header className="no-print border-b border-zinc-200 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-925/95 backdrop-blur sticky top-0 z-40 shadow-sm transition-colors">
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 h-18 py-2.5 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <AgroventuresPremierLogo className="h-10 sm:h-12" isDark={isDark} />
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 sm:h-18 py-2 flex items-center justify-between gap-2 sm:gap-3">
+              
+              {/* Logo Area (Adaptive compact for mobile, full for desktop) */}
+              <div className="flex items-center gap-2">
+                <div className="sm:hidden">
+                  <AgroventuresPremierLogo className="h-9 w-auto" isDark={isDark} compactMobile={true} />
+                </div>
+                <div className="hidden sm:block">
+                  <AgroventuresPremierLogo className="h-11 w-auto" isDark={isDark} compactMobile={false} />
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Desktop Navigation Tabs (Hidden on Mobile, handled by Bottom Nav) */}
+              <div className="hidden md:flex items-center gap-1.5">
                 <nav className="bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 flex text-xs">
                   <button onClick={() => setViewMode('analytics')} className={`px-3 py-1.5 rounded-lg font-bold transition ${viewMode === 'analytics' ? 'bg-emerald-600 text-white shadow-sm' : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white'}`}>
                     📊 Analytics
@@ -434,28 +422,38 @@
                     Media & Docs
                   </button>
                 </nav>
+              </div>
 
+              {/* Action Controls (AI button, Theme, Print) */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {/* AI Advisor Button */}
-                <button onClick={() => setAiChatOpen(!aiChatOpen)} className={`p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${aiChatOpen ? 'bg-amber-500 text-zinc-950 shadow-lg' : 'bg-zinc-100 dark:bg-zinc-850 text-amber-600 dark:text-amber-400 border border-amber-500/40 hover:bg-zinc-200 dark:hover:bg-zinc-800'}`}>
-                   <span>✨ AI Data Analyst</span>
+                <button 
+                  onClick={() => setAiChatOpen(!aiChatOpen)} 
+                  className={`p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${aiChatOpen ? 'bg-amber-500 text-zinc-950 shadow-md font-bold' : 'bg-zinc-100 dark:bg-zinc-850 text-amber-600 dark:text-amber-400 border border-amber-500/40 hover:bg-zinc-200 dark:hover:bg-zinc-800'}`}
+                >
+                   <span>✨</span>
+                   <span className="hidden sm:inline">AI Data Analyst</span>
+                   <span className="sm:hidden font-bold">AI</span>
                 </button>
 
                 {/* Theme Toggle Button */}
                 <button 
                   onClick={() => setIsDark(!isDark)} 
                   title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                  className="p-2 bg-zinc-100 dark:bg-zinc-850 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm transition"
+                  className="w-9 h-9 flex items-center justify-center bg-zinc-100 dark:bg-zinc-850 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm transition"
                 >
                   {isDark ? '☀️' : '🌙'}
                 </button>
-                
-                <button onClick={handlePrint} className="p-2 sm:px-3 sm:py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold hidden md:flex items-center gap-1.5 shadow-sm">
-                  <span>PDF</span>
-                </button>
-                
-                <button onClick={downloadHTMLSource} className="hidden md:flex p-2 sm:px-3 sm:py-1.5 bg-zinc-100 dark:bg-zinc-850 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-semibold items-center gap-1">
-                  <span>💾 Backup</span>
-                </button>
+
+                <a 
+                  href="https://wa.me/94774709667" 
+                  target="_blank" 
+                  title="Chat on WhatsApp"
+                  className="w-9 h-9 sm:w-auto sm:px-3 sm:py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 shadow-sm transition"
+                >
+                  <span>💬</span>
+                  <span className="hidden sm:inline">WhatsApp</span>
+                </a>
               </div>
             </div>
           </header>
@@ -464,232 +462,222 @@
           <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 flex flex-col justify-center">
             
             {/* =========================================================================
-                VIEW MODE 1: COMPREHENSIVE DATA ANALYTICS SUITE (NEW)
+                VIEW MODE 1: COMPREHENSIVE DATA ANALYTICS SUITE (MOBILE OPTIMIZED)
                ========================================================================= */}
             {viewMode === 'analytics' && (
-              <div className="space-y-6 w-full animate-fadeIn">
+              <div className="space-y-4 sm:space-y-6 w-full animate-fadeIn">
                 
                 {/* Title Banner */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-zinc-200 dark:border-zinc-800 gap-3">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 border-b border-zinc-200 dark:border-zinc-800 gap-2">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">BigQuery Telemetry & Agro-Industrial Data Lake</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span className="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Agro-Industrial Telemetry & Data Lake</span>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50 mt-1">Commercial Plantation Analytics & Yield Intelligence</h1>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Real-time agricultural asset performance, 5-year cured yield projections, and contractual cash flow matrices.</p>
+                    <h1 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50 mt-0.5">Commercial Plantation Analytics & Yield Intelligence</h1>
+                    <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">24 commercial estates, 5-year cured yield projections, and contractual cash flow matrices.</p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-data bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl font-semibold">
-                      Live Matale Land Registry Data • Updated 2026
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span className="text-[10px] font-data bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg font-semibold">
+                      Matale Freehold Deeds • 2026
                     </span>
                   </div>
                 </div>
 
-                {/* 1. SaaS KPI Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. SaaS KPI Metric Cards (2x2 on Mobile, 4x1 on Desktop) */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
                   
                   {/* Card 1: Vines */}
-                  <div className="p-4 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-emerald-500/50 transition">
-                    <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                      <span>Targeted Commercial Vines</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-500/30">
-                        ↑ +24.0% YoY
+                  <div className="p-3 sm:p-4 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-emerald-500/50 transition">
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-zinc-500">
+                      <span className="truncate">Vines Tracked</span>
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border border-emerald-500/30">
+                        +24%
                       </span>
                     </div>
-                    <div className="text-3xl font-extrabold text-zinc-950 dark:text-zinc-50 font-data mt-2">4,000,000+</div>
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      120 living vines per 10P unit footprint
+                    <div className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50 font-data mt-1 sm:mt-2">4.0M+</div>
+                    <div className="text-[9px] sm:text-[11px] text-zinc-400 mt-1 truncate">
+                      120 vines / 10P unit
                     </div>
                   </div>
 
                   {/* Card 2: Export Ambition */}
-                  <div className="p-4 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-amber-500/50 transition">
-                    <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                      <span>National Export Goal (2030)</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-500/30">
-                        USD $1.00B
+                  <div className="p-3 sm:p-4 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-amber-500/50 transition">
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-zinc-500">
+                      <span className="truncate">Export Ambition</span>
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400 border border-amber-500/30">
+                        2030
                       </span>
                     </div>
-                    <div className="text-3xl font-extrabold text-amber-500 font-data mt-2">$1,000,000,000</div>
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                      Direct Sri Lanka agro-export balance driver
+                    <div className="text-xl sm:text-3xl font-extrabold text-amber-500 font-data mt-1 sm:mt-2">$1.00B</div>
+                    <div className="text-[9px] sm:text-[11px] text-zinc-400 mt-1 truncate">
+                      National spice engine
                     </div>
                   </div>
 
                   {/* Card 3: Commercial Scale */}
-                  <div className="p-4 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-blue-500/50 transition">
-                    <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                      <span>Commercial Plantations</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-500/30">
-                        24 Estates
+                  <div className="p-3 sm:p-4 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-blue-500/50 transition">
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-zinc-500">
+                      <span className="truncate">Plantations</span>
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-400 border border-blue-500/30">
+                        Scale
                       </span>
                     </div>
-                    <div className="text-3xl font-extrabold text-zinc-950 dark:text-zinc-50 font-data mt-2">24 Estates</div>
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                      Geographic hedging in Central & Western
+                    <div className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50 font-data mt-1 sm:mt-2">24 Estates</div>
+                    <div className="text-[9px] sm:text-[11px] text-zinc-400 mt-1 truncate">
+                      Central & Western
                     </div>
                   </div>
 
                   {/* Card 4: Registered Clients */}
-                  <div className="p-4 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-emerald-500/50 transition">
-                    <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                      <span>Audited Investor Base</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-500/30">
+                  <div className="p-3 sm:p-4 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-emerald-500/50 transition">
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-zinc-500">
+                      <span className="truncate">Investor Base</span>
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 border border-emerald-500/30">
                         100% Freehold
                       </span>
                     </div>
-                    <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-data mt-2">12,440+</div>
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      Registered deeds in Matale Land Registry
+                    <div className="text-xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-data mt-1 sm:mt-2">12,440+</div>
+                    <div className="text-[9px] sm:text-[11px] text-zinc-400 mt-1 truncate">
+                      Registered Title Deeds
                     </div>
                   </div>
 
                 </div>
 
-                {/* 2. Interactive Charts Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {/* 2. Interactive Yield and Return Visuals */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   
-                  {/* Chart 1: 5-Year Harvest Yield Curve */}
-                  <div className="p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm flex flex-col justify-between">
+                  {/* 5-Year Harvest Yield Progression */}
+                  <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm flex flex-col justify-between">
                     <div>
-                      <div className="flex justify-between items-center pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                      <div className="flex justify-between items-center pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
                         <div>
-                          <h3 className="font-extrabold text-sm text-zinc-950 dark:text-zinc-50">5-Year Vanilla Production & Curing Yield Curve</h3>
-                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Green bean pods vs. Gourmet Cured Bourbon Vanilla (Strict 6:1 Ratio)</p>
+                          <h3 className="font-extrabold text-xs sm:text-sm text-zinc-950 dark:text-zinc-50">5-Year Vanilla Production & Curing Yield</h3>
+                          <p className="text-[10px] text-zinc-500">Strict 6:1 green pod to cured Bourbon vanilla ratio</p>
                         </div>
-                        <span className="text-[10px] font-data bg-zinc-100 dark:bg-zinc-850 px-2.5 py-1 rounded-lg text-emerald-600 dark:text-emerald-400 font-bold border border-zinc-200 dark:border-zinc-700">
-                          10 Perch Unit
+                        <span className="text-[9px] font-data bg-zinc-100 dark:bg-zinc-850 px-2 py-0.5 rounded text-emerald-600 dark:text-emerald-400 font-bold border border-zinc-200 dark:border-zinc-700">
+                          10P Unit
                         </span>
                       </div>
                       
-                      {/* Interactive Visual Bar Chart Container */}
-                      <div className="mt-5 space-y-3.5">
+                      <div className="mt-3.5 space-y-2.5 sm:space-y-3">
                         {[
-                          { year: 'Year 1 (Rooting & Establishment)', green: 0, cured: 0, max: 300, note: 'Trellis construction & vine rooting' },
-                          { year: 'Year 2 (Vegetative Growth)', green: 0, cured: 0, max: 300, note: 'Canopy formation & looping' },
-                          { year: 'Year 3 (Maiden Flowering Pods)', green: 180, cured: 30, max: 300, note: 'First harvest: 30 KG cured vanilla' },
-                          { year: 'Year 4 (Peak Commercial Yield)', green: 300, cured: 50, max: 300, note: 'Commercial harvest: 50 KG cured vanilla' },
-                          { year: 'Year 5 (Prime Maturity & Buyback)', green: 300, cured: 50, max: 300, note: 'Harvest maturity: 50 KG cured vanilla' },
+                          { year: 'Yr 1 (Establishment)', green: 0, cured: 0, max: 300, note: 'Trellis construction & vine rooting' },
+                          { year: 'Yr 2 (Vegetative)', green: 0, cured: 0, max: 300, note: 'Canopy formation & looping' },
+                          { year: 'Yr 3 (First Flowering)', green: 180, cured: 30, max: 300, note: '180 kg green → 30 KG cured vanilla' },
+                          { year: 'Yr 4 (Commercial Peak)', green: 300, cured: 50, max: 300, note: '300 kg green → 50 KG cured vanilla' },
+                          { year: 'Yr 5 (Maturity & Buyback)', green: 300, cured: 50, max: 300, note: '300 kg green → 50 KG cured vanilla' },
                         ].map((item, idx) => (
                           <div key={idx} className="space-y-1">
                             <div className="flex justify-between text-xs">
-                              <span className="font-semibold text-zinc-800 dark:text-zinc-200">{item.year}</span>
-                              <span className="font-data font-bold text-amber-500">{item.cured} KG Cured <span className="text-[10px] text-zinc-400">({item.green} KG Green)</span></span>
+                              <span className="font-semibold text-zinc-800 dark:text-zinc-200 text-[11px] sm:text-xs">{item.year}</span>
+                              <span className="font-data font-bold text-amber-500 text-[11px] sm:text-xs">{item.cured} KG Cured <span className="text-[10px] text-zinc-400">({item.green} KG Grn)</span></span>
                             </div>
-                            <div className="w-full h-3.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden flex">
+                            <div className="w-full h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden flex">
                               <div 
                                 className="bg-gradient-to-r from-emerald-600 to-amber-500 h-full rounded-full transition-all duration-700" 
-                                style={{ width: `${(item.green / item.max) * 100}%` }}
+                                style={{ width: `${Math.max((item.green / item.max) * 100, 3)}%` }}
                               />
                             </div>
-                            <div className="text-[10px] text-zinc-400 dark:text-zinc-500">{item.note}</div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-xs">
-                      <span className="text-zinc-500 text-[11px]">Cumulative 5-Yr Harvest: <strong className="text-zinc-900 dark:text-zinc-100">130 KG Gourmet Cured</strong></span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold font-data text-xs">Gross Crop Value: Rs. 19.5M</span>
+                    <div className="mt-3.5 pt-2.5 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-xs">
+                      <span className="text-zinc-500 text-[10px] sm:text-[11px]">Total Harvest: <strong className="text-zinc-900 dark:text-zinc-100">130 KG Cured</strong></span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold font-data text-[10px] sm:text-xs">Gross Crop: Rs. 19.5M</span>
                     </div>
                   </div>
 
-                  {/* Chart 2: Cash Flow Comparison Across All 6 Tiers */}
-                  <div className="p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm flex flex-col justify-between">
+                  {/* Cash Flow Comparison Across Tiers */}
+                  <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm flex flex-col justify-between">
                     <div>
-                      <div className="flex justify-between items-center pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                      <div className="flex justify-between items-center pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
                         <div>
-                          <h3 className="font-extrabold text-sm text-zinc-950 dark:text-zinc-50">Contractual Cash Flow & Return Multiples</h3>
-                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Capital Outlay vs. Cumulative 60-Mo Rental + Year 5 Buyback Covenant</p>
+                          <h3 className="font-extrabold text-xs sm:text-sm text-zinc-950 dark:text-zinc-50">Contractual Return Multiples</h3>
+                          <p className="text-[10px] text-zinc-500">Monthly rentals (60 mos) + Year 5 Buyback Covenant</p>
                         </div>
-                        <span className="text-[10px] font-data bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-lg font-bold border border-amber-500/30">
+                        <span className="text-[9px] font-data bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded font-bold border border-amber-500/30">
                           3.75x Multiple
                         </span>
                       </div>
 
-                      <div className="mt-5 space-y-3">
-                        {tripleTiers.map((tier) => (
-                          <div key={tier.p} className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between text-xs">
+                      <div className="mt-3 space-y-2">
+                        {tripleTiers.slice(0, 4).map((tier) => (
+                          <div key={tier.p} className="p-2 sm:p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between text-xs">
                             <div>
                               <div className="font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                                 <span>{tier.p} Perches</span>
-                                <span className="text-[9px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded font-medium">{tier.tag}</span>
+                                <span className="text-[9px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1 py-0.2 rounded font-medium">{tier.tag}</span>
                               </div>
                               <div className="text-[10px] text-zinc-500 mt-0.5">Outlay: Rs. {(tier.cost / 1000000).toFixed(2)}M</div>
                             </div>
                             <div className="text-right">
-                              <div className="text-emerald-600 dark:text-emerald-400 font-data font-bold">Rs. {tier.monthly.toLocaleString()} <span className="text-[9px] font-normal text-zinc-400">/mo</span></div>
-                              <div className="text-[10px] text-amber-500 font-data font-bold">Payout: Rs. {(tier.total / 1000000).toFixed(2)}M</div>
+                              <div className="text-emerald-600 dark:text-emerald-400 font-data font-bold text-[11px] sm:text-xs">Rs. {tier.monthly.toLocaleString()} <span className="text-[9px] font-normal text-zinc-400">/mo</span></div>
+                              <div className="text-[10px] text-amber-500 font-data font-bold">Total: Rs. {(tier.total / 1000000).toFixed(2)}M</div>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-xs">
-                      <span className="text-zinc-500 text-[11px]">Backed by Matale Registry Freehold Deeds</span>
+                    <div className="mt-3 pt-2.5 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-xs">
+                      <span className="text-zinc-500 text-[10px] sm:text-[11px]">Backed by Registered Freehold Deeds</span>
                       <button onClick={() => setViewMode('calculator')} className="text-amber-500 hover:text-amber-400 font-bold text-xs">
-                        Open ROI Simulator →
+                        Open ROI Calc →
                       </button>
                     </div>
                   </div>
 
                 </div>
 
-                {/* 3. Commercial Estates Data Table with Search, Filter & Split Investigation Panel */}
-                <div className="p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                {/* 3. Commercial Plantations Directory Table & Drawer */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2.5 pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
                     <div>
-                      <h3 className="font-extrabold text-base text-zinc-950 dark:text-zinc-50">Commercial Plantations Master Directory</h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Audited telemetry across all 24 independent estates under active management.</p>
+                      <h3 className="font-extrabold text-sm sm:text-base text-zinc-950 dark:text-zinc-50">Commercial Plantations Directory</h3>
+                      <p className="text-[10px] sm:text-xs text-zinc-500">Audited telemetry across 24 independent estates under active cultivation.</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      {/* Search */}
                       <input 
                         type="text" 
                         placeholder="Search estate or ID..." 
                         value={estateSearchTerm}
                         onChange={(e) => setEstateSearchTerm(e.target.value)}
-                        className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-xs rounded-xl px-3 py-1.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-amber-500 w-40 sm:w-48"
+                        className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-xs rounded-xl px-2.5 py-1.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-amber-500 flex-1 sm:w-44"
                       />
 
-                      {/* Region Filter */}
                       <select 
                         value={estateRegionFilter} 
                         onChange={(e) => setEstateRegionFilter(e.target.value)}
-                        className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-xs rounded-xl px-2.5 py-1.5 text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                        className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-xs rounded-xl px-2 py-1.5 text-zinc-900 dark:text-zinc-100 focus:outline-none"
                       >
                         <option value="All">All Regions (24)</option>
-                        <option value="Matale">Matale District (11)</option>
-                        <option value="Kandy">Kandy District (4)</option>
-                        <option value="North Western">North Western (4)</option>
-                        <option value="Western">Western Province (3)</option>
-                        <option value="Sabaragamuwa">Sabaragamuwa (2)</option>
+                        <option value="Matale">Matale District</option>
+                        <option value="Kandy">Kandy District</option>
+                        <option value="North Western">North Western</option>
+                        <option value="Western">Western Province</option>
                       </select>
                     </div>
                   </div>
 
-                  {/* Table & Split Side Panel */}
+                  {/* Table and Responsive Split Drawer */}
                   <div className="flex flex-col lg:flex-row gap-4">
                     
-                    {/* Primary Table */}
-                    <div className={`overflow-x-auto transition-all duration-300 ${selectedEstate ? 'lg:w-2/3' : 'w-full'}`}>
+                    {/* Primary Table with Touch Scroll */}
+                    <div className={`overflow-x-auto custom-scroll transition-all duration-300 ${selectedEstate ? 'lg:w-2/3' : 'w-full'}`}>
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 font-semibold font-data text-[11px]">
-                            <th className="py-2.5 px-3">ESTATE ID</th>
-                            <th className="py-2.5 px-3">NAME & DISTRICT</th>
-                            <th className="py-2.5 px-3">ACRES</th>
-                            <th className="py-2.5 px-3">LIVING VINES</th>
-                            <th className="py-2.5 px-3">SOIL PH</th>
-                            <th className="py-2.5 px-3">STATUS</th>
+                          <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 font-semibold font-data text-[10px] sm:text-[11px]">
+                            <th className="py-2 px-2.5">ID</th>
+                            <th className="py-2 px-2.5">ESTATE & REGION</th>
+                            <th className="py-2 px-2.5">ACRES</th>
+                            <th className="py-2 px-2.5">VINES</th>
+                            <th className="py-2 px-2.5">STATUS</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-850">
@@ -697,18 +685,17 @@
                             <tr 
                               key={est.id} 
                               onClick={() => setSelectedEstate(est)}
-                              className={`cursor-pointer transition-colors ${selectedEstate?.id === est.id ? 'bg-amber-500/10 dark:bg-amber-500/15 border-l-4 border-amber-500' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'}`}
+                              className={`cursor-pointer transition-colors ${selectedEstate?.id === est.id ? 'bg-amber-500/15 border-l-4 border-amber-500' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'}`}
                             >
-                              <td className="py-3 px-3 font-data font-medium text-amber-600 dark:text-amber-400">{est.id}</td>
-                              <td className="py-3 px-3 font-semibold text-zinc-900 dark:text-zinc-100">
-                                <div>{est.name}</div>
-                                <div className="text-[10px] text-zinc-400 font-normal">{est.region}</div>
+                              <td className="py-2.5 px-2.5 font-data font-semibold text-amber-500">{est.id}</td>
+                              <td className="py-2.5 px-2.5">
+                                <div className="font-bold text-zinc-900 dark:text-zinc-100">{est.name}</div>
+                                <div className="text-[10px] text-zinc-400">{est.region}</div>
                               </td>
-                              <td className="py-3 px-3 font-data text-zinc-700 dark:text-zinc-300">{est.acres} Ac</td>
-                              <td className="py-3 px-3 font-data font-bold text-emerald-600 dark:text-emerald-400">{est.vines.toLocaleString()}</td>
-                              <td className="py-3 px-3 font-data text-zinc-600 dark:text-zinc-400">{est.soilPh} pH</td>
-                              <td className="py-3 px-3">
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${est.status === 'Harvest Ready' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300'}`}>
+                              <td className="py-2.5 px-2.5 font-data text-zinc-700 dark:text-zinc-300">{est.acres} Ac</td>
+                              <td className="py-2.5 px-2.5 font-data font-bold text-emerald-600 dark:text-emerald-400">{est.vines.toLocaleString()}</td>
+                              <td className="py-2.5 px-2.5">
+                                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold whitespace-nowrap ${est.status === 'Harvest Ready' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300'}`}>
                                   {est.status}
                                 </span>
                               </td>
@@ -720,7 +707,7 @@
 
                     {/* Investigation / Details Side Panel */}
                     {selectedEstate && (
-                      <div className="lg:w-1/3 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-4 animate-fadeIn">
+                      <div className="lg:w-1/3 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3 animate-fadeIn">
                         <div className="flex justify-between items-start pb-2 border-b border-zinc-200 dark:border-zinc-800">
                           <div>
                             <span className="text-[10px] font-data text-amber-500 font-bold">{selectedEstate.id}</span>
@@ -749,10 +736,10 @@
                           </div>
                         </div>
 
-                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 text-xs space-y-1.5">
-                          <div className="font-bold text-zinc-800 dark:text-zinc-200">Agronomic Infrastructure:</div>
-                          <div className="text-zinc-600 dark:text-zinc-400 text-[11px]">{selectedEstate.irrigation} with automated micro-climate sensing.</div>
-                          <div className="font-bold text-zinc-800 dark:text-zinc-200 pt-1">Deed Registration:</div>
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 text-xs space-y-1">
+                          <div className="font-bold text-zinc-800 dark:text-zinc-200">Irrigation & Micro-climate:</div>
+                          <div className="text-zinc-600 dark:text-zinc-400 text-[11px]">{selectedEstate.irrigation}</div>
+                          <div className="font-bold text-zinc-800 dark:text-zinc-200 pt-1">Deed Security:</div>
                           <div className="text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">✓ Registered at Matale Land Registry</div>
                         </div>
 
@@ -773,18 +760,18 @@
             )}
 
             {/* =========================================================================
-                VIEW MODE 2: INTERACTIVE PRESENTATION DECK
+                VIEW MODE 2: INTERACTIVE PRESENTATION DECK (FULL SWIPE TOUCH SUPPORT)
                ========================================================================= */}
             {viewMode === 'deck' && (
-              <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} className="w-full flex flex-col items-center">
+              <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} className="w-full flex flex-col items-center touch-pan-y">
                 <div className="w-full flex items-center justify-between text-xs text-zinc-500 mb-2 px-1 no-print">
                   <button onClick={() => setMobileSlideDrawer(true)} className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-850 px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-amber-600 dark:text-amber-400 font-bold text-[11px]">
                     Slide {currentSlide + 1} of {totalSlides}: {slideTitles[currentSlide]} ▾
                   </button>
-                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">← Swipe or use Arrow Keys →</span>
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">← Swipe or Tap →</span>
                 </div>
                 
-                <div className="w-full bg-white dark:bg-zinc-925 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-5 sm:p-9 min-h-[480px] flex flex-col justify-between shadow-xl relative overflow-hidden transition-colors">
+                <div className="w-full bg-white dark:bg-zinc-925 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-4 sm:p-9 min-h-[460px] sm:min-h-[480px] flex flex-col justify-between shadow-xl relative overflow-hidden transition-colors">
                   {currentSlide === 0 && <SlideCover isDark={isDark} />}
                   {currentSlide === 1 && <SlideProfile isDark={isDark} />}
                   {currentSlide === 2 && <SlideProfitEngine isDark={isDark} />}
@@ -798,14 +785,32 @@
 
                   {/* Deck Footer Controls */}
                   <div className="mt-6 pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
-                    <span className="font-mono text-[10px] text-amber-500 font-bold">Agroventures Global Holdings PLC</span>
-                    <div className="flex gap-1.5">
+                    <span className="font-mono text-[10px] text-amber-500 font-bold">Agroventures Global Holdings</span>
+                    <div className="flex gap-1">
                       {Array.from({ length: totalSlides }).map((_, i) => (
-                        <button key={i} onClick={() => setCurrentSlide(i)} className={`h-1.5 rounded-full transition-all ${currentSlide === i ? 'w-6 bg-amber-500' : 'w-2 bg-zinc-300 dark:bg-zinc-700'}`} />
+                        <button key={i} onClick={() => setCurrentSlide(i)} className={`h-1.5 rounded-full transition-all ${currentSlide === i ? 'w-5 bg-amber-500' : 'w-1.5 bg-zinc-300 dark:bg-zinc-700'}`} />
                       ))}
                     </div>
-                    <span className="text-[10px] text-zinc-400">Strictly Confidential</span>
+                    <span className="text-[10px] text-zinc-400 hidden sm:inline">Strictly Confidential</span>
                   </div>
+                </div>
+
+                {/* Mobile Next / Prev Swipe Pill Floating Controls */}
+                <div className="md:hidden flex w-full justify-between items-center gap-3 mt-3 px-1">
+                  <button 
+                    onClick={() => setCurrentSlide(p => Math.max(p - 1, 0))} 
+                    disabled={currentSlide === 0}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-850 text-zinc-800 dark:text-zinc-200 font-bold text-xs border border-zinc-300 dark:border-zinc-700 disabled:opacity-30 active:scale-95 transition-transform"
+                  >
+                    ‹ Previous
+                  </button>
+                  <button 
+                    onClick={() => setCurrentSlide(p => Math.min(p + 1, totalSlides - 1))} 
+                    disabled={currentSlide === totalSlides - 1}
+                    className="flex-1 py-2.5 rounded-xl bg-amber-500 text-zinc-950 font-bold text-xs shadow-md disabled:opacity-30 active:scale-95 transition-transform"
+                  >
+                    Next Slide ›
+                  </button>
                 </div>
               </div>
             )}
@@ -814,17 +819,17 @@
                 VIEW MODE 3: COMPREHENSIVE PROSPECTUS (FULL DOCUMENT)
                ========================================================================= */}
             {viewMode === 'prospectus' && (
-              <div className="space-y-6 max-w-4xl mx-auto w-full">
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm"><SlideCover isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideProfile isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideProfitEngine isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideScaleQuality isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideEconomics isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideInvestmentPlans isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideRiskManagement isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideContractualStructure isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideBanking isDark={isDark} /></div>
-                <div className="p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideContact openBusinessCard={() => setBusinessCardModal(true)} isDark={isDark} /></div>
+              <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto w-full">
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm"><SlideCover isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideProfile isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideProfitEngine isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideScaleQuality isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideEconomics isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideInvestmentPlans isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideRiskManagement isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideContractualStructure isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideBanking isDark={isDark} /></div>
+                <div className="p-4 sm:p-6 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm page-break"><SlideContact openBusinessCard={() => setBusinessCardModal(true)} isDark={isDark} /></div>
               </div>
             )}
 
@@ -832,23 +837,23 @@
                 VIEW MODE 4: ROI SIMULATOR
                ========================================================================= */}
             {viewMode === 'calculator' && (
-              <div className="bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 sm:p-9 max-w-4xl mx-auto w-full shadow-xl">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center pb-4 border-b border-zinc-200 dark:border-zinc-800 gap-2">
+              <div className="bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-4 sm:p-8 max-w-4xl mx-auto w-full shadow-xl">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center pb-3 border-b border-zinc-200 dark:border-zinc-800 gap-1.5">
                   <div>
-                    <h2 className="text-2xl font-extrabold text-zinc-950 dark:text-zinc-50">Investment Cash Flow Simulator</h2>
-                    <p className="text-xs text-zinc-500 mt-0.5">Backed by Registered Freehold Title Deeds in the Matale Land Registry.</p>
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-zinc-950 dark:text-zinc-50">Investment Cash Flow Simulator</h2>
+                    <p className="text-[11px] sm:text-xs text-zinc-500 mt-0.5">Backed by Registered Freehold Title Deeds in the Matale Land Registry.</p>
                   </div>
                   <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-bold self-start">5-Year Tripartite Model</span>
                 </div>
                 
-                <div className="mt-6">
-                  <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block mb-2.5">Select Land Parcel Size</label>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+                <div className="mt-5">
+                  <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block mb-2">Select Land Parcel Size</label>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                     {tripleTiers.map((t) => (
-                      <button key={t.p} onClick={() => setCalcPerches(t.p)} className={`p-3 rounded-2xl border text-center transition ${calcPerches === t.p ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md scale-102' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'}`}>
+                      <button key={t.p} onClick={() => setCalcPerches(t.p)} className={`p-2.5 sm:p-3 rounded-2xl border text-center transition ${calcPerches === t.p ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md scale-102' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'}`}>
                         <div className="text-base font-black font-data">{t.p}P</div>
                         <div className="text-[10px] mt-0.5 opacity-90 font-data">Rs. {(t.cost / 1000000).toFixed(2)}M</div>
-                        {t.tag && <div className="text-[8px] bg-emerald-950 text-emerald-300 rounded px-1 mt-1 font-bold">{t.tag}</div>}
+                        {t.tag && <div className="text-[7px] sm:text-[8px] bg-emerald-950 text-emerald-300 rounded px-1 mt-1 font-bold truncate">{t.tag}</div>}
                       </button>
                     ))}
                   </div>
@@ -857,27 +862,27 @@
                 {(() => {
                   const active = tripleTiers.find((t) => t.p === calcPerches) || tripleTiers[0];
                   return (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-6">
-                      <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+                      <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                         <div className="text-xs text-zinc-500">Capital Outlay</div>
-                        <div className="text-2xl font-bold font-data text-zinc-950 dark:text-zinc-50 mt-1">Rs. {active.cost.toLocaleString()}</div>
+                        <div className="text-xl sm:text-2xl font-bold font-data text-zinc-950 dark:text-zinc-50 mt-1">Rs. {active.cost.toLocaleString()}</div>
                         <div className="text-[10px] text-zinc-400 mt-1">Single upfront freehold deed purchase</div>
                       </div>
-                      <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-emerald-500/40">
+                      <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-emerald-500/40">
                         <div className="text-xs text-emerald-600 dark:text-emerald-400">Monthly Contractual Rental</div>
-                        <div className="text-2xl font-bold font-data text-emerald-600 dark:text-emerald-300 mt-1">Rs. {active.monthly.toLocaleString()} <span className="text-xs text-zinc-400 font-normal">/mo</span></div>
+                        <div className="text-xl sm:text-2xl font-bold font-data text-emerald-600 dark:text-emerald-300 mt-1">Rs. {active.monthly.toLocaleString()} <span className="text-xs text-zinc-400 font-normal">/mo</span></div>
                         <div className="text-[10px] text-emerald-600/80 mt-1">Paid directly to your bank account for 60 months</div>
                       </div>
-                      <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-amber-500/40">
+                      <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-amber-500/40">
                         <div className="text-xs text-amber-600 dark:text-amber-400">Guaranteed Repurchase (Yr 5)</div>
-                        <div className="text-2xl font-bold font-data text-amber-600 dark:text-amber-300 mt-1">Rs. {active.buyback.toLocaleString()}</div>
+                        <div className="text-xl sm:text-2xl font-bold font-data text-amber-600 dark:text-amber-300 mt-1">Rs. {active.buyback.toLocaleString()}</div>
                         <div className="text-[10px] text-amber-600/80 mt-1">Contractual buyback covenant at maturity</div>
                       </div>
-                      <div className="sm:col-span-3 p-6 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-zinc-900 to-amber-950/70 border border-amber-500/50 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg text-white">
+                      <div className="sm:col-span-3 p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-zinc-900 to-amber-950/70 border border-amber-500/50 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 shadow-lg text-white">
                         <div>
                           <div className="text-xs font-bold uppercase tracking-wider text-amber-300">Total 5-Year Contractual Payout</div>
-                          <div className="text-3xl sm:text-4xl font-black font-data mt-1">Rs. {active.total.toLocaleString()}</div>
-                          <div className="text-[11px] text-zinc-300 mt-1">Cumulative returns = Monthly Rentals (Rs. {(active.monthly * 60).toLocaleString()}) + Repurchase Covenant</div>
+                          <div className="text-2xl sm:text-4xl font-black font-data mt-1">Rs. {active.total.toLocaleString()}</div>
+                          <div className="text-[10px] sm:text-[11px] text-zinc-300 mt-1">Cumulative returns = Monthly Rentals (Rs. {(active.monthly * 60).toLocaleString()}) + Repurchase Covenant</div>
                         </div>
                         <a href={`https://wa.me/94774709667?text=Hello%20Ayaz,%20I%20am%20interested%20in%20the%20Agroventures%20${active.p}P%20plan%20(Rs.%20${active.cost.toLocaleString()}).%20Please%20send%20me%20the%20official%20prospectus%20and%20agreement.`} target="_blank" className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black px-6 py-3 rounded-xl text-center text-xs shadow-md transition-transform transform active:scale-95">
                           Request WhatsApp Execution Pack →
@@ -893,60 +898,60 @@
                 VIEW MODE 5: MEDIA & CORPORATE ASSET ARCHIVE
                ========================================================================= */}
             {viewMode === 'media' && (
-              <div className="bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 sm:p-9 max-w-5xl mx-auto w-full space-y-8 shadow-xl">
-                <div className="pb-4 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-4 sm:p-8 max-w-5xl mx-auto w-full space-y-6 sm:space-y-8 shadow-xl">
+                <div className="pb-3 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50">Media & Corporate Archive</h2>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Verified documentation, legal deeds, certifications, and leadership addresses from your local Assets directory.</p>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50">Media & Corporate Archive</h2>
+                    <p className="text-[11px] sm:text-xs text-zinc-500 mt-0.5">Verified documentation, legal deeds, certifications, and leadership video.</p>
                   </div>
-                  <div className="flex gap-1.5 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs">
+                  <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs self-start sm:self-auto">
                     <button onClick={() => setMediaFilter('all')} className={`px-2.5 py-1 rounded-lg ${mediaFilter === 'all' ? 'bg-amber-500 text-zinc-950 font-bold' : 'text-zinc-600 dark:text-zinc-400'}`}>All</button>
-                    <button onClick={() => setMediaFilter('videos')} className={`px-2.5 py-1 rounded-lg ${mediaFilter === 'videos' ? 'bg-amber-500 text-zinc-950 font-bold' : 'text-zinc-600 dark:text-zinc-400'}`}>Vision & Video</button>
-                    <button onClick={() => setMediaFilter('documents')} className={`px-2.5 py-1 rounded-lg ${mediaFilter === 'documents' ? 'bg-amber-500 text-zinc-950 font-bold' : 'text-zinc-600 dark:text-zinc-400'}`}>Legal & Deeds</button>
-                    <button onClick={() => setMediaFilter('certifications')} className={`px-2.5 py-1 rounded-lg ${mediaFilter === 'certifications' ? 'bg-amber-500 text-zinc-950 font-bold' : 'text-zinc-600 dark:text-zinc-400'}`}>Certifications</button>
+                    <button onClick={() => setMediaFilter('videos')} className={`px-2.5 py-1 rounded-lg ${mediaFilter === 'videos' ? 'bg-amber-500 text-zinc-950 font-bold' : 'text-zinc-600 dark:text-zinc-400'}`}>Video</button>
+                    <button onClick={() => setMediaFilter('documents')} className={`px-2.5 py-1 rounded-lg ${mediaFilter === 'documents' ? 'bg-amber-500 text-zinc-950 font-bold' : 'text-zinc-600 dark:text-zinc-400'}`}>Legal</button>
+                    <button onClick={() => setMediaFilter('certifications')} className={`px-2.5 py-1 rounded-lg ${mediaFilter === 'certifications' ? 'bg-amber-500 text-zinc-950 font-bold' : 'text-zinc-600 dark:text-zinc-400'}`}>Certs</button>
                   </div>
                 </div>
 
                 {/* Executive Video */}
                 {(mediaFilter === 'all' || mediaFilter === 'videos') && (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                      <h3 className="text-base font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wider">Executive Video Messages</h3>
+                      <h3 className="text-sm sm:text-base font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wider">Executive Video Messages</h3>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                       <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
                         <div className="aspect-video bg-black relative flex items-center justify-center">
-                          <video controls className="w-full h-full object-cover" width="640" height="360" preload="metadata">
+                          <video controls playsInline className="w-full h-full object-cover" preload="metadata">
                             <source src="./Assets/Company Vision/Mr. Nilanga Karunarathne - Chairman of Agroventures.mp4" type="video/mp4" />
                             <source src="./Assets/Company Vision/Mr. Nilanga Karunarathna - Chairman of Agroventures.mp4" type="video/mp4" />
                             Your browser does not support the video element.
                           </video>
                         </div>
-                        <div className="p-4">
-                          <div className="font-bold text-amber-600 dark:text-amber-400 text-sm">Chairman's Visionary Address</div>
-                          <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-1">Mr. Nilanga Karunarathne on building Sri Lanka's $1 Billion agricultural export engine.</div>
+                        <div className="p-3.5">
+                          <div className="font-bold text-amber-600 dark:text-amber-400 text-xs sm:text-sm">Chairman's Visionary Address</div>
+                          <div className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-0.5">Mr. Nilanga Karunarathne on building Sri Lanka's $1 Billion agricultural export engine.</div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 gap-3">
-                        <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex gap-3 items-center">
-                          <div className="w-20 h-16 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex-shrink-0">
+                      <div className="grid grid-cols-1 gap-2.5">
+                        <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex gap-3 items-center">
+                          <div className="w-16 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                             <ResilientAssetImg basePath="./Assets/Company Vision/" filename="Group Chairman_s Message (Mr. Nilanga Karunarathne)" alt="Chairman Message" className="w-full h-full object-cover" />
                           </div>
                           <div>
-                            <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">Group Chairman's Written Statement</div>
-                            <div className="text-[11px] text-zinc-500 mt-0.5">Growing Sri Lanka's agricultural future through sustainable commercial vanilla.</div>
+                            <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">Chairman's Written Statement</div>
+                            <div className="text-[10px] text-zinc-500 mt-0.5">Growing Sri Lanka's agricultural future through commercial vanilla.</div>
                           </div>
                         </div>
 
-                        <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex gap-3 items-center">
-                          <div className="w-20 h-16 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex-shrink-0">
+                        <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex gap-3 items-center">
+                          <div className="w-16 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                             <ResilientAssetImg basePath="./Assets/Company Vision/" filename="Director of HR_s Message" alt="Director HR Message" className="w-full h-full object-cover" />
                           </div>
                           <div>
                             <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">Director of HR's Statement</div>
-                            <div className="text-[11px] text-zinc-500 mt-0.5">"Cultivating People, Growing Together" — empowering 500+ plantation professionals.</div>
+                            <div className="text-[10px] text-zinc-500 mt-0.5">"Cultivating People, Growing Together" — empowering 500+ plantation staff.</div>
                           </div>
                         </div>
                       </div>
@@ -956,117 +961,117 @@
 
                 {/* PDF Legal Documents */}
                 {(mediaFilter === 'all' || mediaFilter === 'documents') && (
-                  <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                  <div className="space-y-3 pt-3 border-t border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                      <h3 className="text-base font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wider">Agreements, Deeds & Corporate Documents</h3>
+                      <h3 className="text-sm sm:text-base font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wider">Agreements & Legal Deeds</h3>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
-                      <a href="./Assets/Agreements and Documents/legal_docs.pdf" target="_blank" rel="noopener noreferrer" className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-emerald-500 transition group flex flex-col justify-between shadow-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+                      <a href="./Assets/Agreements and Documents/legal_docs.pdf" target="_blank" rel="noopener noreferrer" className="p-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-emerald-500 transition group flex flex-col justify-between shadow-sm">
                         <div>
-                          <div className="text-3xl mb-2.5">📜</div>
+                          <div className="text-2xl mb-1.5">📜</div>
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs group-hover:text-emerald-500 transition">Legal Deeds Sample</div>
-                          <div className="text-[10px] text-zinc-500 mt-1">Matale Land Registry registration proof.</div>
+                          <div className="text-[10px] text-zinc-500 mt-0.5">Matale Land Registry registration proof.</div>
                         </div>
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-4">Download PDF →</span>
+                        <span className="text-[10px] text-amber-500 font-bold mt-3">Download PDF →</span>
                       </a>
 
-                      <a href="./Assets/Agreements and Documents/cultivation_agreement.pdf" target="_blank" rel="noopener noreferrer" className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-emerald-500 transition group flex flex-col justify-between shadow-sm">
+                      <a href="./Assets/Agreements and Documents/cultivation_agreement.pdf" target="_blank" rel="noopener noreferrer" className="p-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-emerald-500 transition group flex flex-col justify-between shadow-sm">
                         <div>
-                          <div className="text-3xl mb-2.5">🤝</div>
+                          <div className="text-2xl mb-1.5">🤝</div>
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs group-hover:text-emerald-500 transition">Cultivation Agreement</div>
-                          <div className="text-[10px] text-zinc-500 mt-1">Standard 5-Year Tripartite terms.</div>
+                          <div className="text-[10px] text-zinc-500 mt-0.5">Standard 5-Year Tripartite terms.</div>
                         </div>
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-4">Download PDF →</span>
+                        <span className="text-[10px] text-amber-500 font-bold mt-3">Download PDF →</span>
                       </a>
 
-                      <a href="./Assets/Agreements and Documents/Investment.Plan2026.pdf" target="_blank" rel="noopener noreferrer" className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-emerald-500 transition group flex flex-col justify-between shadow-sm">
+                      <a href="./Assets/Agreements and Documents/Investment.Plan2026.pdf" target="_blank" rel="noopener noreferrer" className="p-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-emerald-500 transition group flex flex-col justify-between shadow-sm">
                         <div>
-                          <div className="text-3xl mb-2.5">📊</div>
+                          <div className="text-2xl mb-1.5">📊</div>
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs group-hover:text-emerald-500 transition">Investment Plan 2026</div>
-                          <div className="text-[10px] text-zinc-500 mt-1">Comprehensive returns & buyback model.</div>
+                          <div className="text-[10px] text-zinc-500 mt-0.5">Comprehensive returns & buyback model.</div>
                         </div>
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-4">Download PDF →</span>
+                        <span className="text-[10px] text-amber-500 font-bold mt-3">Download PDF →</span>
                       </a>
 
-                      <a href="./Assets/Agreements and Documents/AVGH Company Details.pdf" target="_blank" rel="noopener noreferrer" className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-emerald-500 transition group flex flex-col justify-between shadow-sm">
+                      <a href="./Assets/Agreements and Documents/AVGH Company Details.pdf" target="_blank" rel="noopener noreferrer" className="p-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-emerald-500 transition group flex flex-col justify-between shadow-sm">
                         <div>
-                          <div className="text-3xl mb-2.5">🏢</div>
+                          <div className="text-2xl mb-1.5">🏢</div>
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs group-hover:text-emerald-500 transition">AVGH Company Details</div>
-                          <div className="text-[10px] text-zinc-500 mt-1">Corporate registry & executive profile.</div>
+                          <div className="text-[10px] text-zinc-500 mt-0.5">Corporate registry & executive profile.</div>
                         </div>
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-4">Download PDF →</span>
+                        <span className="text-[10px] text-amber-500 font-bold mt-3">Download PDF →</span>
                       </a>
                     </div>
                   </div>
                 )}
 
-                {/* Official Certifications */}
+                {/* Certifications Grid */}
                 {(mediaFilter === 'all' || mediaFilter === 'certifications') && (
-                  <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                  <div className="space-y-3 pt-3 border-t border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                      <h3 className="text-base font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wider">Audited Certifications & Accreditations</h3>
+                      <h3 className="text-sm sm:text-base font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wider">Audited Certifications</h3>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
                       
-                      <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-3">
-                        <div className="w-12 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0 border border-zinc-300 dark:border-zinc-700">
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-2.5">
+                        <div className="w-11 h-13 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                           <ResilientAssetImg basePath="./Assets/Certifications/" filename="AgroVentures_ISO_22000_2018_FoodSafety_Certificate" alt="ISO 22000" className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">ISO 22000:2018 Certified</div>
-                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">International Food Safety Standard</div>
+                          <div className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-0.5">Food Safety Management Standard</div>
                         </div>
                       </div>
 
-                      <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-3">
-                        <div className="w-12 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0 border border-zinc-300 dark:border-zinc-700">
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-2.5">
+                        <div className="w-11 h-13 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                           <ResilientAssetImg basePath="./Assets/Certifications/" filename="AgroVentures_GreatPlaceToWork_Certificate_2025" alt="Great Place to Work" className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">Great Place to Work® 2025</div>
-                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">Ranked #04 in Sri Lanka Manufacturing</div>
+                          <div className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-0.5">Ranked #04 in Sri Lanka Mfg</div>
                         </div>
                       </div>
 
-                      <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-3">
-                        <div className="w-12 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0 border border-zinc-300 dark:border-zinc-700">
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-2.5">
+                        <div className="w-11 h-13 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                           <ResilientAssetImg basePath="./Assets/Certifications/" filename="AgroVentures_BestWorkplaces_Manufacturing_Rank04_2026" alt="Best Workplaces 2026" className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">Best Workplaces 2026</div>
-                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">Manufacturing & Production Category</div>
+                          <div className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-0.5">Manufacturing & Production Category</div>
                         </div>
                       </div>
 
-                      <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-3">
-                        <div className="w-12 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0 border border-zinc-300 dark:border-zinc-700">
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-2.5">
+                        <div className="w-11 h-13 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                           <ResilientAssetImg basePath="./Assets/Certifications/" filename="AgroVentures_Milestones_Excellence_Award_2025" alt="Milestones Award" className="w-full h-full object-cover" />
                         </div>
                         <div>
-                          <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">Milestones of Excellence 2025</div>
-                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">Operational integrity and growth award</div>
+                          <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">Milestones Award 2025</div>
+                          <div className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-0.5">Operational integrity & growth</div>
                         </div>
                       </div>
 
-                      <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-3">
-                        <div className="w-12 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0 border border-zinc-300 dark:border-zinc-700">
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-2.5">
+                        <div className="w-11 h-13 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                           <ResilientAssetImg basePath="./Assets/Certifications/" filename="AgroVentures_Company_Profile_Vanilla_Export_Brochure" alt="Export Brochure" className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">Export Profile Brochure</div>
-                          <div className="text-[10px] text-zinc-500 mt-0.5">Commercial curing & export logistics</div>
+                          <div className="text-[9px] text-zinc-500 mt-0.5">Commercial curing & export logistics</div>
                         </div>
                       </div>
 
-                      <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-3">
-                        <div className="w-12 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0 border border-zinc-300 dark:border-zinc-700">
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-2.5">
+                        <div className="w-11 h-13 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                           <ResilientAssetImg basePath="./Assets/Certifications/" filename="AgroVentures_Plantation_Estates_Gallery_Map" alt="Estates Map" className="w-full h-full object-cover" />
                         </div>
                         <div>
-                          <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">24 Plantations Gallery Map</div>
-                          <div className="text-[10px] text-zinc-500 mt-0.5">Geographical footprint of estates</div>
+                          <div className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">24 Plantations Map</div>
+                          <div className="text-[9px] text-zinc-500 mt-0.5">Geographical footprint of estates</div>
                         </div>
                       </div>
 
@@ -1075,23 +1080,23 @@
                 )}
 
                 {/* Advisor Profile Showcase */}
-                <div className="p-5 bg-gradient-to-r from-zinc-100 via-white to-emerald-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-emerald-950/40 border border-amber-500/30 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-5">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-500/50 bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
+                <div className="p-4 sm:p-5 bg-gradient-to-r from-zinc-100 via-white to-emerald-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-emerald-950/40 border border-amber-500/30 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-amber-500/50 bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
                       <ResilientAssetImg basePath="./Assets/My Details/" filename="Ayaz Azeez - Potrait" alt="Ayaz Azeez" className="w-full h-full object-cover" />
                     </div>
                     <div>
-                      <div className="text-zinc-950 dark:text-white font-black text-lg">Ayaz Azeez</div>
-                      <div className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">Regional Development Manager (Premier Business Division - Western II)</div>
+                      <div className="text-zinc-950 dark:text-white font-black text-base sm:text-lg">Ayaz Azeez</div>
+                      <div className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">Regional Development Manager (Premier Division)</div>
                       <div className="text-[10px] text-zinc-500 mt-0.5">DICT, HND (HONS), BSc (Hons) in Computer Network</div>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                    <button onClick={() => setBusinessCardModal(true)} className="flex-1 md:flex-initial bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-300 font-bold px-3.5 py-2 rounded-xl text-xs text-center border border-amber-500/40 shadow-sm">
+                    <button onClick={() => setBusinessCardModal(true)} className="flex-1 md:flex-initial bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-300 font-bold px-3 py-2 rounded-xl text-xs text-center border border-amber-500/40 shadow-sm">
                       📇 Business Card
                     </button>
-                    <a href="https://wa.me/94774709667" target="_blank" className="flex-1 md:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs text-center shadow-sm">WhatsApp: +94 77 470 9667</a>
-                    <a href="tel:+94784180639" className="flex-1 md:flex-initial bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold px-4 py-2 rounded-xl text-xs text-center border border-zinc-300 dark:border-zinc-700">Call: +94 78 418 0639</a>
+                    <a href="https://wa.me/94774709667" target="_blank" className="flex-1 md:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs text-center shadow-sm">WhatsApp</a>
+                    <a href="tel:+94784180639" className="flex-1 md:flex-initial bg-zinc-100 dark:bg-zinc-850 hover:bg-zinc-200 text-zinc-800 dark:text-zinc-200 font-bold px-3 py-2 rounded-xl text-xs text-center border border-zinc-300 dark:border-zinc-700">Call</a>
                   </div>
                 </div>
 
@@ -1100,23 +1105,70 @@
 
           </main>
 
+          {/* =========================================================================
+              MOBILE BOTTOM NAVIGATION BAR (NATIVE APP FEEL)
+             ========================================================================= */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-zinc-925/95 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 safe-bottom shadow-lg no-print">
+            <div className="grid grid-cols-5 h-14">
+              <button 
+                onClick={() => setViewMode('analytics')} 
+                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${viewMode === 'analytics' ? 'text-emerald-600 dark:text-emerald-400 font-extrabold' : 'text-zinc-400 dark:text-zinc-500'}`}
+              >
+                <span className="text-base">📊</span>
+                <span className="text-[10px] leading-none">Analytics</span>
+              </button>
+
+              <button 
+                onClick={() => setViewMode('deck')} 
+                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${viewMode === 'deck' ? 'text-amber-500 font-extrabold' : 'text-zinc-400 dark:text-zinc-500'}`}
+              >
+                <span className="text-base">📑</span>
+                <span className="text-[10px] leading-none">Deck</span>
+              </button>
+
+              <button 
+                onClick={() => setViewMode('prospectus')} 
+                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${viewMode === 'prospectus' ? 'text-amber-500 font-extrabold' : 'text-zinc-400 dark:text-zinc-500'}`}
+              >
+                <span className="text-base">📜</span>
+                <span className="text-[10px] leading-none">Brief</span>
+              </button>
+
+              <button 
+                onClick={() => setViewMode('calculator')} 
+                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${viewMode === 'calculator' ? 'text-amber-500 font-extrabold' : 'text-zinc-400 dark:text-zinc-500'}`}
+              >
+                <span className="text-base">🧮</span>
+                <span className="text-[10px] leading-none">ROI Calc</span>
+              </button>
+
+              <button 
+                onClick={() => setViewMode('media')} 
+                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${viewMode === 'media' ? 'text-amber-500 font-extrabold' : 'text-zinc-400 dark:text-zinc-500'}`}
+              >
+                <span className="text-base">📁</span>
+                <span className="text-[10px] leading-none">Media</span>
+              </button>
+            </div>
+          </nav>
+
           {/* BUSINESS CARD MODAL */}
           {businessCardModal && (
             <div className="fixed inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-zinc-900 border border-amber-500/50 rounded-3xl p-5 max-w-lg w-full shadow-2xl relative">
-                <div className="flex justify-between items-center pb-3 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="bg-white dark:bg-zinc-900 border border-amber-500/50 rounded-3xl p-4 sm:p-5 max-w-lg w-full shadow-2xl relative animate-fadeIn">
+                <div className="flex justify-between items-center pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
                   <div className="flex items-center gap-2">
                     <span className="text-amber-500 font-bold text-sm">Official Business Card</span>
-                    <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">Verified Executive</span>
+                    <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">Verified</span>
                   </div>
-                  <button onClick={() => setBusinessCardModal(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-white font-bold text-base">✕</button>
+                  <button onClick={() => setBusinessCardModal(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-white font-bold text-base p-1">✕</button>
                 </div>
-                <div className="my-4 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center">
-                  <ResilientAssetImg basePath="./Assets/My Details/" filename="Business Card" alt="Ayaz Azeez Business Card" className="w-full h-auto object-contain max-h-[60vh]" />
+                <div className="my-3.5 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center">
+                  <ResilientAssetImg basePath="./Assets/My Details/" filename="Business Card" alt="Ayaz Azeez Business Card" className="w-full h-auto object-contain max-h-[55vh]" />
                 </div>
-                <div className="flex justify-between items-center pt-2 text-xs">
-                  <span className="text-zinc-500 text-[11px]">Ayaz Azeez • Regional Development Manager</span>
-                  <a href="./Assets/My Details/Business Card.JPG" download="Ayaz_Azeez_Business_Card.jpg" className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold px-3 py-1.5 rounded-xl">
+                <div className="flex justify-between items-center pt-1 text-xs">
+                  <span className="text-zinc-500 text-[11px] truncate">Ayaz Azeez • Regional Dev Manager</span>
+                  <a href="./Assets/My Details/Business Card.JPG" download="Ayaz_Azeez_Business_Card.jpg" className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold px-3 py-1.5 rounded-xl text-xs">
                     Download Card ↓
                   </a>
                 </div>
@@ -1124,17 +1176,17 @@
             </div>
           )}
 
-          {/* FLOATING GEMINI AI ASSISTANT DIALOG ("CHAT WITH YOUR DATA") */}
+          {/* FLOATING GEMINI AI ASSISTANT DIALOG (MOBILE BOTTOM DRAWER READY) */}
           {aiChatOpen && (
-             <div className="fixed bottom-20 sm:bottom-6 right-4 w-[calc(100vw-2rem)] sm:w-[420px] bg-white dark:bg-zinc-900 border border-amber-500/50 rounded-3xl shadow-2xl z-50 flex flex-col no-print h-[68vh] max-h-[680px] overflow-hidden">
+             <div className="fixed inset-x-2 sm:inset-x-auto bottom-16 sm:bottom-6 sm:right-4 sm:w-[420px] bg-white dark:bg-zinc-900 border border-amber-500/50 rounded-3xl shadow-2xl z-50 flex flex-col no-print h-[72vh] sm:h-[68vh] max-h-[660px] overflow-hidden animate-fadeIn">
                
                {/* Chat Header */}
-               <div className="p-3.5 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950">
-                  <div className="flex items-center gap-2.5">
-                     <span className="text-xl">✨</span>
+               <div className="p-3 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950">
+                  <div className="flex items-center gap-2">
+                     <span className="text-lg">✨</span>
                      <div>
-                       <span className="font-extrabold text-amber-500 text-sm block">Agroventures AI Data Analyst</span>
-                       <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-medium">BigQuery Models • Freehold Deed Advisory</span>
+                       <span className="font-extrabold text-amber-500 text-xs sm:text-sm block">Agroventures AI Analyst</span>
+                       <span className="text-[9px] text-emerald-600 dark:text-emerald-400 block font-medium">Yield Models • Deeds • ROI Calculations</span>
                      </div>
                   </div>
                   <button onClick={() => setAiChatOpen(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-white p-1 text-sm font-bold">✕</button>
@@ -1142,28 +1194,28 @@
 
                {/* Thought/Reasoning Banner */}
                {isGenerating && thoughtBanner && (
-                 <div className="px-3.5 py-1.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-2 text-[10px] text-amber-600 dark:text-amber-400 font-data">
-                   <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></div>
+                 <div className="px-3 py-1 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400 font-data">
+                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></div>
                    <span>{thoughtBanner}</span>
                  </div>
                )}
                
                {/* Messages Body */}
-               <div className="flex-1 p-4 overflow-y-auto custom-scroll space-y-3.5 bg-zinc-50/50 dark:bg-zinc-900/40">
+               <div className="flex-1 p-3.5 overflow-y-auto custom-scroll space-y-3 bg-zinc-50/50 dark:bg-zinc-900/40">
                   {chatMessages.map((msg, idx) => (
                     <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                      <div className={`max-w-[90%] p-3.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-sm whitespace-pre-line ${msg.role === 'user' ? 'bg-amber-500 text-zinc-950 font-semibold rounded-br-none' : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700/80 rounded-bl-none'}`}>
+                      <div className={`max-w-[90%] p-3 rounded-2xl text-xs leading-relaxed shadow-sm whitespace-pre-line ${msg.role === 'user' ? 'bg-amber-500 text-zinc-950 font-semibold rounded-br-none' : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700/80 rounded-bl-none'}`}>
                         {msg.text}
                       </div>
 
                       {/* Suggestion follow-up chips */}
                       {msg.suggestions && msg.suggestions.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2 max-w-[90%]">
+                        <div className="flex flex-wrap gap-1 mt-1.5 max-w-[90%]">
                           {msg.suggestions.map((sug, sIdx) => (
                             <button
                               key={sIdx}
                               onClick={() => handleChatSubmit(null, sug)}
-                              className="text-[10px] bg-zinc-100 dark:bg-zinc-850 hover:bg-amber-500 hover:text-zinc-950 text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 transition"
+                              className="text-[9px] sm:text-[10px] bg-zinc-100 dark:bg-zinc-850 hover:bg-amber-500 hover:text-zinc-950 text-zinc-600 dark:text-zinc-300 px-2 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-700 transition"
                             >
                               💡 {sug}
                             </button>
@@ -1172,21 +1224,11 @@
                       )}
                     </div>
                   ))}
-                  
-                  {isGenerating && !chatMessages[chatMessages.length - 1]?.text && (
-                    <div className="flex justify-start">
-                      <div className="p-3 rounded-2xl text-xs bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                      </div>
-                    </div>
-                  )}
                   <div ref={chatEndRef} />
                </div>
 
                {/* Multiline Chat Form */}
-               <form onSubmit={(e) => handleChatSubmit(e)} className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex gap-2">
+               <form onSubmit={(e) => handleChatSubmit(e)} className="p-2.5 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex gap-1.5">
                   <textarea 
                     rows="1"
                     value={chatInput}
@@ -1197,35 +1239,27 @@
                         handleChatSubmit(e);
                       }
                     }}
-                    placeholder="Ask about yields, 40P cash flows, deeds..."
-                    className="flex-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-amber-500 resize-none transition-colors"
+                    placeholder="Ask about yields, 40P, deeds..."
+                    className="flex-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-2.5 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-amber-500 resize-none transition-colors"
                     disabled={isGenerating}
                   />
-                  <button type="submit" disabled={isGenerating || !chatInput.trim()} className="bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 rounded-xl font-bold text-xs disabled:opacity-50 transition-all shadow-sm">
+                  <button type="submit" disabled={isGenerating || !chatInput.trim()} className="bg-amber-500 hover:bg-amber-400 text-zinc-950 px-3.5 py-1.5 rounded-xl font-bold text-xs disabled:opacity-50 transition-all shadow-sm">
                     Send
                   </button>
                </form>
              </div>
           )}
 
-          {/* Sticky Mobile Nav Drawer */}
-          {viewMode === 'deck' && (
-            <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-zinc-900/95 border-t border-zinc-200 dark:border-zinc-800 p-2.5 flex items-center justify-between gap-2 no-print">
-              <button onClick={() => setCurrentSlide((p) => Math.max(p - 1, 0))} disabled={currentSlide === 0} className="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold disabled:opacity-30">‹ Prev</button>
-              <button onClick={() => setMobileSlideDrawer(true)} className="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-950 border border-emerald-600/50 text-[11px] font-bold text-amber-500 rounded-xl font-data">{currentSlide + 1} / {totalSlides}</button>
-              <button onClick={() => setCurrentSlide((p) => Math.min(p + 1, totalSlides - 1))} disabled={currentSlide === totalSlides - 1} className="flex-1 py-2 rounded-xl bg-amber-500 text-zinc-950 text-xs font-bold disabled:opacity-30">Next ›</button>
-            </nav>
-          )}
-
+          {/* Slide Navigator Modal for Deck View */}
           {mobileSlideDrawer && (
-            <div className="fixed inset-0 z-50 bg-zinc-950/80 backdrop-blur-sm flex flex-col justify-end sm:hidden">
-              <div className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700 rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto space-y-2.5">
+            <div className="fixed inset-0 z-50 bg-zinc-950/80 backdrop-blur-sm flex flex-col justify-end">
+              <div className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700 rounded-t-3xl p-4 max-h-[75vh] overflow-y-auto space-y-2 safe-bottom">
                 <div className="flex justify-between items-center pb-2 border-b border-zinc-200 dark:border-zinc-800">
                   <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">Navigate Deck</span>
-                  <button onClick={() => setMobileSlideDrawer(false)} className="text-zinc-400 font-bold text-sm">✕</button>
+                  <button onClick={() => setMobileSlideDrawer(false)} className="text-zinc-400 font-bold text-sm p-1">✕</button>
                 </div>
                 {slideTitles.map((t, i) => (
-                  <button key={i} onClick={() => { setCurrentSlide(i); setMobileSlideDrawer(false); }} className={`w-full p-3 rounded-xl text-left text-xs flex justify-between items-center transition ${currentSlide === i ? 'bg-amber-500 text-zinc-950 font-bold' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200'}`}>
+                  <button key={i} onClick={() => { setCurrentSlide(i); setMobileSlideDrawer(false); }} className={`w-full p-2.5 rounded-xl text-left text-xs flex justify-between items-center transition ${currentSlide === i ? 'bg-amber-500 text-zinc-950 font-bold' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200'}`}>
                     <span>{i + 1}. {t}</span>
                     {currentSlide === i && <span>✓</span>}
                   </button>
@@ -1239,27 +1273,27 @@
     }
 
     // =========================================================================
-    // SLIDE CONTENT COMPONENTS (THE 10-SLIDE EXECUTIVE PRESENTATION)
+    // SLIDE CONTENT COMPONENTS
     // =========================================================================
     function SlideCover({ isDark }) {
       return (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div className="flex justify-between items-center">
-            <AgroventuresPremierLogo className="h-9 sm:h-11" isDark={isDark} />
-            <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold">Official 2026 Edition</span>
+            <AgroventuresPremierLogo className="h-8 sm:h-11" isDark={isDark} compactMobile={true} />
+            <span className="text-[9px] sm:text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">2026 Edition</span>
           </div>
-          <div className="py-3">
-            <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Premier Circle Investment Prospectus</span>
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-zinc-950 dark:text-white mt-1 leading-tight">Living Agricultural Assets Engineered for Long-Term Wealth</h1>
-            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 mt-2.5 leading-relaxed">
+          <div className="py-2 sm:py-3">
+            <span className="text-amber-500 font-bold text-[11px] sm:text-xs uppercase tracking-wider">Premier Circle Investment Prospectus</span>
+            <h1 className="text-2xl sm:text-5xl font-extrabold text-zinc-950 dark:text-white mt-1 leading-tight">Living Agricultural Assets Engineered for Long-Term Wealth</h1>
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 mt-2 leading-relaxed">
               Targeting USD 1 Billion in high-value spice exports for Sri Lanka by 2030 through commercial Bourbon vanilla cultivation across 24 prime estates, backed by registered Freehold Title Deeds.
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 border-t border-zinc-200 dark:border-zinc-800 text-xs">
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Track Record</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">Founded 2016 (10+ Yrs)</div></div>
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Operating Scale</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">24 Plantations</div></div>
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Investor Base</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">12,440+ Registered Clients</div></div>
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Asset Security</div><div className="font-bold text-amber-500 mt-0.5">Matale Freehold Deeds</div></div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 text-xs">
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Track Record</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">Founded 2016 (10+ Yrs)</div></div>
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Operating Scale</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">24 Plantations</div></div>
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Investor Base</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">12,440+ Clients</div></div>
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Asset Security</div><div className="font-bold text-amber-500 mt-0.5">Matale Freehold</div></div>
           </div>
         </div>
       );
@@ -1267,22 +1301,22 @@
 
     function SlideProfile() {
       return (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Corporate Pedigree</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Visionary Leadership & Corporate Purpose</h2>
-          <p className="italic text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 leading-relaxed">
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Visionary Leadership & Purpose</h2>
+          <p className="italic text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-900 p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 leading-relaxed">
             "To revolutionize Sri Lanka's agricultural landscape by fostering sustainability, empowering local rural farming communities, and delivering world-class premium vanilla produce to global international markets." — Mr. Nilanga Karunarathne, Founder & Group Chairman
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-amber-500 font-extrabold text-2xl font-data">$1 Billion</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-amber-500 font-extrabold text-xl sm:text-2xl font-data">$1 Billion</div>
               <div className="text-zinc-900 dark:text-white font-bold mt-1">National Export Vision by 2030</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Accelerating Sri Lanka's commercial agro-export trade balance through high-value bourbon vanilla.</div>
+              <div className="text-[10px] text-zinc-500 mt-1">Accelerating commercial agro-export trade balance through bourbon vanilla.</div>
             </div>
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-emerald-600 dark:text-emerald-400 font-extrabold text-2xl font-data">4,000,000+</div>
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-emerald-600 dark:text-emerald-400 font-extrabold text-xl sm:text-2xl font-data">4,000,000+</div>
               <div className="text-zinc-900 dark:text-white font-bold mt-1">Targeted Commercial Vines</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Scientifically monitored micro-irrigation and shade-controlled plantation footprint islandwide.</div>
+              <div className="text-[10px] text-zinc-500 mt-1">Scientifically monitored micro-irrigation and shade-controlled canopy footprint.</div>
             </div>
           </div>
         </div>
@@ -1291,23 +1325,23 @@
 
     function SlideProfitEngine() {
       const steps = [
-        ['01', 'CAPITAL ENTRY', 'Investor capital is allocated directly toward land title registration and vine infrastructure.'],
-        ['02', 'LIVING ASSETS', 'Freehold land deeds registered at the Matale Land Registry establish indisputable ownership.'],
-        ['03', 'SCIENTIFIC CULTIVATION', 'Agroventures plantation botanists manage pollination, trellising, and nutrient delivery.'],
-        ['04', 'VALUE CREATION', 'Curing at specialized facilities converts green beans into gourmet Bourbon vanilla (6:1 ratio).'],
-        ['05', 'RISK MITIGATION', 'Geographical diversification across 24 estates insulates against localized anomalies.'],
-        ['06', 'STRUCTURED PAYOUT', 'Guaranteed contractual monthly rentals (60 mos) and maturity repurchase covenant.']
+        ['01', 'CAPITAL ENTRY', 'Investor capital allocated directly to title registration and vine infrastructure.'],
+        ['02', 'LIVING ASSETS', 'Freehold land deeds registered at Matale Land Registry establish indisputable ownership.'],
+        ['03', 'SCIENTIFIC CULTIVATION', 'Plantation botanists manage pollination, trellising, and nutrient delivery.'],
+        ['04', 'VALUE CREATION', 'Curing at specialized facilities converts green beans to Bourbon vanilla (6:1 ratio).'],
+        ['05', 'RISK MITIGATION', 'Geographical diversification across 24 estates insulates against local disruptions.'],
+        ['06', 'STRUCTURED PAYOUT', 'Guaranteed monthly rentals (60 mos) and maturity repurchase covenant.']
       ];
       return (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">The Profit Engine</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">From Living Assets to Contractual Cash Flow</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Living Assets to Cash Flow</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {steps.map(([n, title, body]) => (
-              <div key={n} className="p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div key={n} className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
                 <div className="text-[10px] font-data text-amber-500 font-bold">{n}</div>
-                <div className="font-extrabold text-zinc-900 dark:text-white text-xs mt-1">{title}</div>
-                <div className="text-[10px] text-zinc-500 mt-1 leading-relaxed">{body}</div>
+                <div className="font-extrabold text-zinc-900 dark:text-white text-xs mt-0.5">{title}</div>
+                <div className="text-[9px] text-zinc-500 mt-0.5 leading-snug">{body}</div>
               </div>
             ))}
           </div>
@@ -1317,23 +1351,23 @@
 
     function SlideScaleQuality() {
       const items = [
-        ['24', 'Managed Estates', 'Diversified plantation network across Central & Western provinces'],
-        ['4M+', 'Targeted Vines', 'Sri Lanka’s largest commercial vanilla cultivation footprint'],
+        ['24', 'Managed Estates', 'Diversified network across Central & Western provinces'],
+        ['4M+', 'Targeted Vines', 'Sri Lanka’s largest commercial vanilla footprint'],
         ['USD 1B', '2030 Ambition', 'Direct national export contribution program'],
         ['12,440+', 'Clients', 'Registered retail & corporate investor base'],
-        ['ISO 22000', 'Food Safety', 'Audited international standard for processing & curing'],
-        ['Rank #04', 'Great Place to Work', 'Top-tier workplace recognition in Sri Lanka Manufacturing 2026']
+        ['ISO 22000', 'Food Safety', 'Audited international standard for curing & packing'],
+        ['Rank #04', 'Great Place to Work', 'Workplace recognition in Sri Lanka Manufacturing 2026']
       ];
       return (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Scale & Operating Platform</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Commercial Scale & Audited Excellence</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Commercial Scale & Audited Quality</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {items.map(([value, title, body], i) => (
-              <div key={i} className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                <div className="text-xl sm:text-2xl font-extrabold font-data text-emerald-600 dark:text-emerald-300">{value}</div>
+              <div key={i} className="p-2.5 sm:p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                <div className="text-lg sm:text-2xl font-extrabold font-data text-emerald-600 dark:text-emerald-300">{value}</div>
                 <div className="text-xs font-bold text-zinc-900 dark:text-white mt-0.5">{title}</div>
-                <div className="text-[10px] text-zinc-500 mt-1 leading-relaxed">{body}</div>
+                <div className="text-[9px] text-zinc-500 mt-0.5 leading-tight">{body}</div>
               </div>
             ))}
           </div>
@@ -1343,27 +1377,27 @@
 
     function SlideEconomics() {
       return (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Agronomic Model</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">5-Year Vanilla Production & Revenue Benchmark</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Illustrative 10 Perch Unit</div>
-              <div className="text-2xl font-extrabold font-data text-zinc-900 dark:text-white mt-1">120 Living Vines</div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-2 leading-relaxed">
-                Generates a cumulative 5-year cured gourmet harvest of <strong className="text-emerald-600 dark:text-emerald-300 font-data">130 KG</strong> at a strict 6:1 green-to-cured conversion ratio.
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">5-Year Vanilla Benchmark</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">10 Perch Unit</div>
+              <div className="text-xl sm:text-2xl font-extrabold font-data text-zinc-950 dark:text-white mt-1">120 Living Vines</div>
+              <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed">
+                Produces cumulative 5-year cured harvest of <strong className="text-emerald-600 dark:text-emerald-300 font-data">130 KG</strong> at strict 6:1 conversion ratio.
               </div>
             </div>
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Global Commodity Benchmark</div>
-              <div className="text-2xl font-extrabold font-data text-amber-500">Rs. 150,000 / KG</div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-2 leading-relaxed">
-                Benchmark valuation anchored at USD 500/kg (LKR 300 conversion), producing <strong className="text-zinc-900 dark:text-white font-data">Rs. 19.5 Million</strong> in gross botanical crop value.
+            <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Commodity Benchmark</div>
+              <div className="text-xl sm:text-2xl font-extrabold font-data text-amber-500">Rs. 150,000 / KG</div>
+              <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed">
+                Benchmark valuation anchored at USD 500/kg (LKR 300 FX), generating <strong className="text-zinc-900 dark:text-white font-data">Rs. 19.5 Million</strong> gross crop value.
               </div>
             </div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/30 text-xs text-zinc-700 dark:text-zinc-300">
-            <strong>Contractual Distinction:</strong> Gross biological harvest output underwrites Agroventures' financial liquidity, enabling fully guaranteed fixed monthly investor rentals regardless of harvest timing.
+          <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/30 text-[11px] text-zinc-700 dark:text-zinc-300">
+            <strong>Biological Liquidity:</strong> Biological crop production provides group financial liquidity to underwrite fixed monthly investor rentals regardless of harvest timing.
           </div>
         </div>
       );
@@ -1379,27 +1413,27 @@
         { p: 940, cost: 100000000, monthly: 2083333, buyback: 250000000, total: 374999980, tag: 'VIP Club' }
       ];
       return (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Flagship Tier Structure</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Triple Benefit Universal Cash Flow Plans</h2>
-          <div className="space-y-1.5">
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Triple Benefit Cash Flow Plans</h2>
+          <div className="space-y-1">
             {tripleTiers.map((t) => (
-              <div key={t.p} className="grid grid-cols-4 gap-2 p-2.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 items-center text-xs">
+              <div key={t.p} className="grid grid-cols-4 gap-1 p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 items-center text-[11px]">
                 <div>
-                  <div className="font-extrabold font-data text-zinc-900 dark:text-white">{t.p}P {t.tag && <span className="text-[8px] bg-amber-500/20 text-amber-500 px-1 py-0.5 rounded ml-1">{t.tag}</span>}</div>
-                  <div className="text-[10px] text-zinc-500 font-data">Rs. {t.cost.toLocaleString()}</div>
+                  <div className="font-extrabold font-data text-zinc-900 dark:text-white">{t.p}P</div>
+                  <div className="text-[9px] text-zinc-500 font-data">Rs. {(t.cost / 1000000).toFixed(2)}M</div>
                 </div>
                 <div>
-                  <div className="text-[9px] text-zinc-400">Monthly (60 Mo)</div>
+                  <div className="text-[8px] text-zinc-400">Monthly</div>
                   <div className="text-emerald-600 dark:text-emerald-300 font-bold font-data">Rs. {t.monthly.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-[9px] text-zinc-400">Repurchase (Yr 5)</div>
-                  <div className="text-amber-500 font-bold font-data">Rs. {t.buyback.toLocaleString()}</div>
+                  <div className="text-[8px] text-zinc-400">Buyback</div>
+                  <div className="text-amber-500 font-bold font-data">Rs. {(t.buyback / 1000000).toFixed(2)}M</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[9px] text-zinc-400">Total Payout</div>
-                  <div className="text-zinc-900 dark:text-white font-extrabold font-data">Rs. {t.total.toLocaleString()}</div>
+                  <div className="text-[8px] text-zinc-400">Total Payout</div>
+                  <div className="text-zinc-900 dark:text-white font-extrabold font-data">Rs. {(t.total / 1000000).toFixed(2)}M</div>
                 </div>
               </div>
             ))}
@@ -1410,17 +1444,17 @@
 
     function SlideRiskManagement() {
       return (
-        <div className="space-y-4">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Institutional Governance</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Enterprise Risk Controls & Governance</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-amber-500 font-bold text-sm">Geographical Diversification</div>
-              <div className="text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed">24 independent plantation locations prevent localized weather, pest, or micro-climatic disruptions from affecting group revenue.</div>
+        <div className="space-y-3">
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Governance</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Enterprise Risk Controls</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-amber-500 font-bold text-xs sm:text-sm">Geographical Diversification</div>
+              <div className="text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed text-[11px]">24 independent plantation locations prevent localized weather or pest events from impacting group revenue.</div>
             </div>
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">Audited Quality Systems</div>
-              <div className="text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed">Strict adherence to ISO 22000:2018 food safety standards guarantees export-readiness and long-term buyer contracts in Europe and North America.</div>
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-emerald-600 dark:text-emerald-400 font-bold text-xs sm:text-sm">Audited Quality Systems</div>
+              <div className="text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed text-[11px]">ISO 22000:2018 food safety standards guarantees export-readiness and long-term buyer contracts in international markets.</div>
             </div>
           </div>
         </div>
@@ -1429,26 +1463,26 @@
 
     function SlideContractualStructure() {
       return (
-        <div className="space-y-4">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Legal Asset Architecture</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Tripartite Legal Security & Title Deeds</h2>
-          <ul className="text-xs space-y-2.5 text-zinc-700 dark:text-zinc-300">
-            <li className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2.5">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold font-data text-sm">01</span>
+        <div className="space-y-3">
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Legal Architecture</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Tripartite Title Deeds & Security</h2>
+          <ul className="text-xs space-y-2 text-zinc-700 dark:text-zinc-300">
+            <li className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">01</span>
               <div>
-                <strong className="text-zinc-900 dark:text-white">Registered Freehold Title Deeds:</strong> Executed by licensed legal counsel and registered directly in the investor's legal name at the Land Registry Office of Matale.
+                <strong className="text-zinc-900 dark:text-white">Registered Freehold Deeds:</strong> Registered directly in investor's legal name at the Land Registry of Matale.
               </div>
             </li>
-            <li className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2.5">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold font-data text-sm">02</span>
+            <li className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">02</span>
               <div>
-                <strong className="text-zinc-900 dark:text-white">5-Year Tripartite Cultivation Agreement:</strong> Contractually assigning full agronomic management, monitoring, security, and insurance to Agro Ventures Plantations (Pvt) Ltd.
+                <strong className="text-zinc-900 dark:text-white">5-Year Cultivation Agreement:</strong> Assigning full agronomic management, maintenance, and insurance to Agroventures.
               </div>
             </li>
-            <li className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2.5">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold font-data text-sm">03</span>
+            <li className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">03</span>
               <div>
-                <strong className="text-zinc-900 dark:text-white">Contractual Repurchase Covenant:</strong> Mandatory corporate repurchase agreement at month 60, eliminating investor liquidity friction.
+                <strong className="text-zinc-900 dark:text-white">Repurchase Covenant:</strong> Contractual repurchase agreement at month 60, ensuring guaranteed liquidity.
               </div>
             </li>
           </ul>
@@ -1458,22 +1492,21 @@
 
     function SlideBanking() {
       return (
-        <div className="space-y-4">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Corporate Banking Channels</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Verified Commercial Banking Channels</h2>
-          <p className="text-xs text-zinc-600 dark:text-zinc-300">All client subscription payments must be executed strictly via official commercial bank channels:</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="font-bold text-zinc-900 dark:text-white text-sm">Hatton National Bank PLC</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Battaramulla Branch</div>
-              <div className="font-data text-emerald-600 dark:text-emerald-400 font-bold mt-2">Current A/C: 085010031565</div>
-              <div className="font-data text-zinc-600 dark:text-zinc-400">Savings A/C: 085020329094</div>
+        <div className="space-y-3">
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Banking Channels</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Official Commercial Bank Channels</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="font-bold text-zinc-900 dark:text-white text-xs sm:text-sm">Hatton National Bank PLC</div>
+              <div className="text-[10px] text-zinc-500">Battaramulla Branch</div>
+              <div className="font-data text-emerald-600 dark:text-emerald-400 font-bold mt-1 text-[11px]">Current A/C: 085010031565</div>
+              <div className="font-data text-zinc-500 text-[10px]">Savings A/C: 085020329094</div>
             </div>
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="font-bold text-zinc-900 dark:text-white text-sm">Sampath Bank PLC</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Gothatuwa New Town Branch</div>
-              <div className="font-data text-emerald-600 dark:text-emerald-400 font-bold mt-2">Current A/C: 017311001963</div>
-              <div className="text-[11px] text-zinc-500 mt-1">Mobile Pay Merchant Code: <strong className="text-amber-500">AgroVentures</strong></div>
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="font-bold text-zinc-900 dark:text-white text-xs sm:text-sm">Sampath Bank PLC</div>
+              <div className="text-[10px] text-zinc-500">Gothatuwa New Town Branch</div>
+              <div className="font-data text-emerald-600 dark:text-emerald-400 font-bold mt-1 text-[11px]">Current A/C: 017311001963</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">Merchant Code: <strong className="text-amber-500">AgroVentures</strong></div>
             </div>
           </div>
         </div>
@@ -1482,31 +1515,31 @@
 
     function SlideContact({ openBusinessCard }) {
       return (
-        <div className="space-y-4">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Premier Advisory Consultation</span>
-          <div className="flex items-center gap-4 bg-zinc-50 dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <div className="w-18 h-18 rounded-full overflow-hidden border-2 border-amber-500/50 bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
-              <ResilientAssetImg basePath="./Assets/My Details/" filename="Ayaz Azeez - Potrait" alt="Ayaz Azeez" className="w-full h-full object-cover" width="72" height="72" />
+        <div className="space-y-3">
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Advisory Consultation</span>
+          <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-amber-500/50 bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
+              <ResilientAssetImg basePath="./Assets/My Details/" filename="Ayaz Azeez - Potrait" alt="Ayaz Azeez" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <h2 className="text-xl sm:text-2xl font-extrabold text-zinc-950 dark:text-white">Ayaz Azeez</h2>
+                <h2 className="text-base sm:text-xl font-extrabold text-zinc-950 dark:text-white">Ayaz Azeez</h2>
                 {openBusinessCard && (
-                  <button onClick={openBusinessCard} className="self-start sm:self-auto bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-amber-500/40">
-                    📇 View Business Card
+                  <button onClick={openBusinessCard} className="self-start sm:self-auto bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-lg border border-amber-500/40">
+                    📇 Business Card
                   </button>
                 )}
               </div>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Regional Development Manager – Premier Business Division (Western II)</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5 font-data">DICT, HND (HONS), BSc (Hons) in Computer Network</p>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Regional Development Manager (Premier Business Division)</p>
+              <p className="text-[9px] text-zinc-500 font-data">DICT, HND (HONS), BSc (Hons) in Computer Network</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2.5 text-xs pt-1">
-            <a href="tel:+94784180639" className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-bold text-zinc-900 dark:text-white text-center hover:border-zinc-400 transition">Direct: +94 78 418 0639</a>
-            <a href="https://wa.me/94774709667" target="_blank" className="p-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-center transition shadow-sm">WhatsApp: +94 77 470 9667</a>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <a href="tel:+94784180639" className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-bold text-zinc-900 dark:text-white text-center hover:border-zinc-400 transition">Direct: +94 78 418 0639</a>
+            <a href="https://wa.me/94774709667" target="_blank" className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-center transition shadow-sm">WhatsApp: +94 77 470 9667</a>
           </div>
-          <div className="text-[11px] text-zinc-500 pt-1">
-            Agro Ventures Premier • 525, Union Place, Colombo 02 • Email: ayaz@agroventuresplantations.com • Web: Agroventures.lk
+          <div className="text-[10px] text-zinc-500">
+            525, Union Place, Colombo 02 • ayaz@agroventuresplantations.com • Agroventures.lk
           </div>
         </div>
       );
