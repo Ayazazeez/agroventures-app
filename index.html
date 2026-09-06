@@ -74,105 +74,58 @@
     const { useState, useEffect, useRef } = React;
 
     // =========================================================================
-    // RESPONSIVE OFFICIAL AGROVENTURES PREMIER LOGO
+    // AUTHENTIC OFFICIAL AGROVENTURES COMPANY LOGO COMPONENT
     // =========================================================================
     function AgroventuresPremierLogo({ className = "h-9 sm:h-11 w-auto", showSubtitle = true, showTagline = true, isDark = true, compactMobile = false }) {
-      const primaryColor = !isDark ? "#09090b" : "#ffffff";
-      const silverGradientId = !isDark ? "silver-grad-light" : "silver-grad-dark";
-      const viewBox = compactMobile ? "0 0 410 96" : (showTagline ? "0 0 680 96" : "0 0 410 96");
+      const [imgSrc, setImgSrc] = useState("./Assets/AgroVentures_Logo.jpg");
+      const [loadFailed, setLoadFailed] = useState(false);
+
+      const handleImageError = () => {
+        if (imgSrc === "./Assets/AgroVentures_Logo.jpg") {
+          setImgSrc("./Assets/Certifications/AgroVentures_Logo.jpg");
+        } else if (imgSrc === "./Assets/Certifications/AgroVentures_Logo.jpg") {
+          setImgSrc("./Assets/Logo.png.jpg");
+        } else {
+          setLoadFailed(true);
+        }
+      };
 
       return (
-        <div className={`inline-flex items-center select-none ${className}`}>
-          <svg viewBox={viewBox} className="h-full w-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id={silverGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor={!isDark ? "#18181b" : "#ffffff"} />
-                <stop offset="50%" stopColor={!isDark ? "#52525b" : "#e2e8f0"} />
-                <stop offset="100%" stopColor={!isDark ? "#09090b" : "#94a3b8"} />
-              </linearGradient>
-            </defs>
+        <div className={`inline-flex items-center gap-2 sm:gap-3 select-none ${className}`}>
+          {!loadFailed ? (
+            <div className="flex items-center gap-2">
+              {/* Luxury high-contrast badge holding the authentic corporate logo */}
+              <div className="bg-white px-2 sm:px-2.5 py-1 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center transition-transform hover:scale-105">
+                <img 
+                  src={imgSrc} 
+                  alt="Agroventures Plantations" 
+                  className="h-6 sm:h-7 md:h-8 w-auto object-contain max-w-[140px] sm:max-w-[180px]"
+                  onError={handleImageError}
+                />
+              </div>
 
-            {/* Tree Symbol with Metallic Leaf Clusters */}
-            <g transform="translate(10, 8)">
-              {/* Trunk */}
-              <path d="M 38 74 L 44 48 L 50 74 M 44 48 L 44 32" stroke={`url(#${silverGradientId})`} strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-              
-              {/* Central Top Leaves */}
-              <ellipse cx="44" cy="18" rx="4.5" ry="8" fill={`url(#${silverGradientId})`} />
-              <ellipse cx="44" cy="30" rx="4.5" ry="7" fill={`url(#${silverGradientId})`} />
-
-              {/* Tier 1 Leaves */}
-              <ellipse cx="33" cy="23" rx="4.2" ry="7.5" transform="rotate(-24 33 23)" fill={`url(#${silverGradientId})`} />
-              <ellipse cx="55" cy="23" rx="4.2" ry="7.5" transform="rotate(24 55 23)" fill={`url(#${silverGradientId})`} />
-
-              {/* Tier 2 Leaves */}
-              <ellipse cx="23" cy="32" rx="4.2" ry="7.5" transform="rotate(-48 23 32)" fill={`url(#${silverGradientId})`} />
-              <ellipse cx="65" cy="32" rx="4.2" ry="7.5" transform="rotate(48 65 32)" fill={`url(#${silverGradientId})`} />
-
-              {/* Tier 3 Leaves */}
-              <ellipse cx="17" cy="44" rx="4" ry="7" transform="rotate(-72 17 44)" fill={`url(#${silverGradientId})`} />
-              <ellipse cx="71" cy="44" rx="4" ry="7" transform="rotate(72 71 44)" fill={`url(#${silverGradientId})`} />
-
-              {/* Tier 4 (Bottom) */}
-              <ellipse cx="18" cy="56" rx="3.8" ry="6.5" transform="rotate(-90 18 56)" fill={`url(#${silverGradientId})`} />
-              <ellipse cx="70" cy="56" rx="3.8" ry="6.5" transform="rotate(90 70 56)" fill={`url(#${silverGradientId})`} />
-
-              {/* Inner Accent Leaves */}
-              <ellipse cx="32" cy="37" rx="3.8" ry="6.5" transform="rotate(-30 32 37)" fill={`url(#${silverGradientId})`} />
-              <ellipse cx="56" cy="37" rx="3.8" ry="6.5" transform="rotate(30 56 37)" fill={`url(#${silverGradientId})`} />
-              <ellipse cx="28" cy="49" rx="3.5" ry="6" transform="rotate(-55 28 49)" fill={`url(#${silverGradientId})`} />
-              <ellipse cx="60" cy="49" rx="3.5" ry="6" transform="rotate(55 60 49)" fill={`url(#${silverGradientId})`} />
-            </g>
-
-            {/* Wordmark: "agro" */}
-            <text x="106" y="55" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="900" fontSize="42" letterSpacing="-0.03em" fill={`url(#${silverGradientId})`}>
-              agro
-            </text>
-
-            {/* Wordmark: "ventures" with embedded icon in 'o' */}
-            <g transform="translate(198, 38)">
-              <circle cx="10" cy="0" r="11" stroke={`url(#${silverGradientId})`} strokeWidth="3.2" fill="none" />
-              <path d="M 6 7 L 10 1 L 14 7" stroke={`url(#${silverGradientId})`} strokeWidth="2" strokeLinecap="round" />
-              <circle cx="10" cy="-3" r="2.2" fill={`url(#${silverGradientId})`} />
-              <circle cx="6.5" cy="-1.5" r="1.7" fill={`url(#${silverGradientId})`} />
-              <circle cx="13.5" cy="-1.5" r="1.7" fill={`url(#${silverGradientId})`} />
-            </g>
-            
-            <text x="219" y="55" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800" fontSize="42" letterSpacing="-0.03em" fill={`url(#${silverGradientId})`}>
-              ventures
-            </text>
-
-            {/* Underline & PREMIER Subtitle */}
-            <line x1="106" y1="65" x2="395" y2="65" stroke={`url(#${silverGradientId})`} strokeWidth="2.5" strokeLinecap="round" />
-            
-            {showSubtitle && (
-              <text x="395" y="80" textAnchor="end" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800" fontSize="13.5" letterSpacing="0.48em" fill={`url(#${silverGradientId})`}>
-                PREMIER
-              </text>
-            )}
-
-            {/* Vertical Separator Divider Line & Tagline (Shown on Desktop) */}
-            {showTagline && !compactMobile && (
-              <>
-                <line x1="425" y1="14" x2="425" y2="82" stroke={!isDark ? "rgba(113, 113, 122, 0.45)" : "rgba(148, 163, 184, 0.55)"} strokeWidth="2.2" strokeLinecap="round" />
-                
-                <g transform="translate(442, 10)">
-                  <text x="0" y="22" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800" fontSize="19" letterSpacing="0.06em" fill={`url(#${silverGradientId})`}>
-                    AGRO VENTURES
-                  </text>
-                  <text x="0" y="44" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800" fontSize="19" letterSpacing="0.06em" fill={`url(#${silverGradientId})`}>
-                    GROUP PREMIER
-                  </text>
-                  <text x="0" y="66" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800" fontSize="19" letterSpacing="0.06em" fill={`url(#${silverGradientId})`}>
-                    SERVICE PROVIDER
-                  </text>
-                </g>
-              </>
-            )}
-          </svg>
+              {/* Tagline / Subtitle for Desktop */}
+              {!compactMobile && showTagline && (
+                <div className="hidden lg:flex flex-col justify-center border-l border-zinc-300 dark:border-zinc-700 pl-2.5 text-left">
+                  <span className="text-[10px] font-black tracking-wider text-amber-500 uppercase leading-tight">PREMIER CIRCLE</span>
+                  <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-semibold leading-tight">Master Institutional Edition 2026</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Resilient SVG fallback if image file is not found */
+            <div className="flex items-center gap-2 bg-emerald-950/20 px-3 py-1.5 rounded-xl border border-emerald-500/30">
+              <span className="text-xl">🌿</span>
+              <div className="flex flex-col">
+                <span className="font-black text-xs sm:text-sm text-zinc-950 dark:text-white tracking-wider">AGROVENTURES</span>
+                <span className="text-[9px] text-amber-500 font-bold tracking-widest">PLANTATIONS</span>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
+
 
     // Helper Image component with multi-candidate resilience
     function ResilientAssetImg({ filename, basePath = "./Assets/", alt, className = "", width, height }) {
@@ -230,6 +183,8 @@
       const [selectedEstate, setSelectedEstate] = useState(null);
       const [estateRegionFilter, setEstateRegionFilter] = useState('All');
       const [estateSearchTerm, setEstateSearchTerm] = useState('');
+      const [stressScenario, setStressScenario] = useState('base'); // 'base' | 'downside' | 'bull'
+      const [facilityCategoryFilter, setFacilityCategoryFilter] = useState('All');
       
       const [chatMessages, setChatMessages] = useState([
         { 
@@ -312,31 +267,116 @@
         { p: 940, cost: 100000000, monthly: 2083333, buyback: 250000000, total: 374999980, tag: 'VIP Club' },
       ];
 
+      // 5-Year Cash Flow Distribution Waterfall Schedule (PDF Section 4)
+      const waterfallSchedule = [
+        { year: "Year 0", phase: "Land Allocation & Polytunnel Build", yieldGreen: "0 kg", yieldCured: "0 kg", mechanism: "Initial Capital Placement", grossRev: "—", netPayout: "-1,000,000 LKR", highlight: false },
+        { year: "Year 1", phase: "Vegetative Canopy & Root Growth", yieldGreen: "0 kg", yieldCured: "0 kg", mechanism: "Corporate Coupon (15% p.a.)", grossRev: "150,000 LKR", netPayout: "+150,000 LKR", highlight: false },
+        { year: "Year 2", phase: "Vine Maturation & Flowering", yieldGreen: "0 kg", yieldCured: "0 kg", mechanism: "Corporate Coupon (15% p.a.)", grossRev: "150,000 LKR", netPayout: "+150,000 LKR", highlight: false },
+        { year: "Year 3", phase: "First Harvest (~50% Ramp)", yieldGreen: "60 kg", yieldCured: "12 kg", mechanism: "Export Realization (@ 150k Floor)", grossRev: "1,800,000 LKR", netPayout: "+1,170,000 LKR", highlight: false },
+        { year: "Year 4", phase: "Full Commercial Yield Maturity", yieldGreen: "120 kg", yieldCured: "24 kg", mechanism: "Export Realization (@ 150k Floor)", grossRev: "3,600,000 LKR", netPayout: "+2,340,000 LKR", highlight: false },
+        { year: "Year 5", phase: "Peak Commercial Yield", yieldGreen: "120 kg", yieldCured: "24 kg", mechanism: "Export Realization (@ 150k Floor)", grossRev: "3,600,000 LKR", netPayout: "+2,340,000 LKR", highlight: true },
+      ];
+
+      // Dynamic Sensitivity & Stress-Testing Matrix (PDF Section 4)
+      const sensitivityScenarios = {
+        base: {
+          id: "base",
+          title: "Base Case Target",
+          price: "$500 / kg (150,000 LKR)",
+          fxRate: "300 LKR = $1 USD",
+          assumptions: "Standard CEA polytunnel yields, 35% processing fee, automated fertigation.",
+          impact: "Unlevered IRR reaches 61.5%; exceeds hurdle rates by >35%.",
+          irr: "61.5%",
+          payback: "36 Months",
+          cashOnCash: "515%",
+          badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-500/40"
+        },
+        downside: {
+          id: "downside",
+          title: "Severe Downside Shock",
+          price: "$350 / kg (105,000 LKR)",
+          fxRate: "330 LKR = $1 USD",
+          assumptions: "+15% labor inflation shock, 15% biological yield decline from ambient heat.",
+          impact: "Capital fully preserved via Matale freehold title deed (>200,000 LKR/perch baseline equity).",
+          irr: "Capital Preserved",
+          payback: "48 Months",
+          cashOnCash: "280%",
+          badgeColor: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400 border-amber-500/40"
+        },
+        bull: {
+          id: "bull",
+          title: "Bull Market Surge",
+          price: "$600 / kg (180,000 LKR)",
+          fxRate: "280 LKR = $1 USD",
+          assumptions: "Automated enzymatic curing achieving 2.2% vanillin; direct luxury cosmetic contract export.",
+          impact: "IRR exceeds 75%; top-decile private equity performance in agricultural commodities.",
+          irr: "> 75.0%",
+          payback: "28 Months",
+          cashOnCash: "680%",
+          badgeColor: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-400 border-blue-500/40"
+        }
+      };
+
+      // 8 Specialized Industrial Facilities (PDF Section 1)
+      const industrialFacilities = [
+        { id: "FAC-01", name: "Pannampitiya Export Spice Milling", category: "Spice Milling", region: "Matale (Central)", cap: "150 MT / yr", desc: "Centralized curing, automated slicing, and vacuum conditioning facility with microbiological screening.", cert: "ISO 22000:2018" },
+        { id: "FAC-02", name: "Avonleahill Bio-Dynamic Tea", category: "Tea Manufacturing", region: "Diyathalawa", cap: "85,000 kg / mo", desc: "High-altitude bio-dynamic tea estate & orthodox manufacturing unit for premier international exports.", cert: "Bio-Dynamic" },
+        { id: "FAC-03", name: "Jamesvalley Organic Green Tea", category: "Tea Manufacturing", region: "Gampola", cap: "50,000 kg / mo", desc: "Certified organic green tea plantation with solar-assisted steaming and rolling machinery.", cert: "EU Organic" },
+        { id: "FAC-04", name: "Kingslynn Specialty Teas", category: "Specialty Tea", region: "Central Highlands", cap: "20,000 kg / mo", desc: "Single-origin artisanal white tea and specialty silver tips export line.", cert: "Artisanal Single-Origin" },
+        { id: "FAC-05", name: "Makandura Coconut Milk & Virgin Oil", category: "Coconut Products", region: "North Western", cap: "120,000 L / mo", desc: "Cold-pressed virgin coconut oil (VCO) and ultra-filtered aseptic coconut milk line.", cert: "HACCP Certified" },
+        { id: "FAC-06", name: "Naula Closed-Loop Bio-Fertilizer", category: "Bio-Fertilizer", region: "Matale", cap: "400 MT / yr", desc: "Zero-waste anaerobic microbial digester supplying 100% organic liquid vermiwash to all 24 estates.", cert: "100% Circular" },
+        { id: "FAC-07", name: "Central Colombo Retail Store (The Vanilla Shop)", category: "Retail Showroom", region: "Colombo 02", cap: "B2B & HNWIs", desc: "Institutional showroom and luxury vanilla retail concept store at 525 Union Place.", cert: "Direct Retail" },
+        { id: "FAC-08", name: "Bio Foods (Est. 1993)", category: "Strategic Partner", region: "Islandwide", cap: "30+ Yrs Network", desc: "Pioneering organic processing partner with 30+ years of European and US export trade relationships.", cert: "Fairtrade Certified" },
+      ];
+
+      // Triple-Layer Asset Protection Framework (PDF Section 3)
+      const capitalProtectionLayers = [
+        {
+          num: "01",
+          layer: "Layer 1: Real Estate Collateral",
+          mech: "Absolute freehold title deed transferred and registered under the investor's legal name at the Land Registry Office of Matale.",
+          outcome: "10-perch land unit carries a market baseline exceeding 200,000 LKR/perch (>2,000,000 LKR total value), delivering an immediate >100% equity cushion on a 1,000,000 LKR placement."
+        },
+        {
+          num: "02",
+          layer: "Layer 2: Agronomic CEA Infrastructure",
+          mech: "Controlled-Environment Agriculture (CEA) utilizing industrial polytunnels, automated drip fertigation, and IoT microclimate sensors.",
+          outcome: "Completely insulates biological vines from unseasonal monsoons, severe droughts, insect pests, and fungal blights, transforming agriculture into factory-grade production."
+        },
+        {
+          num: "03",
+          layer: "Layer 3: Corporate Solvency Guarantee",
+          mech: "Diversified corporate multi-revenue cash flows across tea estates, spice milling, coconut manufacturing, and retail operations.",
+          outcome: "Parent group balance sheet absorbs early gestation operational risks, guaranteeing contractual coupon disbursements during the 2.5-year crop maturation period."
+        }
+      ];
+
+      // 24 Authentic Nationwide Estates (PDF Section 1)
       const estatesDataset = [
-        { id: "EST-001", name: "Matale Central Estate", region: "Matale (Central)", acres: 45, vines: 180000, soilPh: 6.2, elevation: "420m", irrigation: "Micro-sprinklers", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-002", name: "Rattota Highlands", region: "Matale (Central)", acres: 38, vines: 152000, soilPh: 6.4, elevation: "510m", irrigation: "Drip Automation", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-003", name: "Ukuwela Green Hills", region: "Matale (Central)", acres: 50, vines: 200000, soilPh: 6.1, elevation: "390m", irrigation: "Organic Agroforestry", status: "Harvest Ready", deeds: "Registered" },
-        { id: "EST-004", name: "Dambulla Valley", region: "Matale (Central)", acres: 60, vines: 240000, soilPh: 6.5, elevation: "280m", irrigation: "Automated Sprinklers", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-005", name: "Palapathwela Reserve", region: "Matale (Central)", acres: 32, vines: 128000, soilPh: 6.3, elevation: "440m", irrigation: "Canopy Shade System", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-006", name: "Pallepola Agro Valley", region: "Matale (Central)", acres: 42, vines: 168000, soilPh: 6.2, elevation: "360m", irrigation: "Terraced Slopes", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-007", name: "Yatawatta Eco Estate", region: "Matale (Central)", acres: 35, vines: 140000, soilPh: 6.3, elevation: "480m", irrigation: "Biodiverse Shade", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-008", name: "Naula Commercial Estate", region: "Matale (Central)", acres: 55, vines: 220000, soilPh: 6.4, elevation: "310m", irrigation: "Smart Drip Irrigation", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-009", name: "Galewela Bourbon Fields", region: "Matale (Central)", acres: 48, vines: 192000, soilPh: 6.5, elevation: "290m", irrigation: "Precision Sensors", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-010", name: "Wilgamuwa Agro Park", region: "Matale (Central)", acres: 70, vines: 280000, soilPh: 6.2, elevation: "220m", irrigation: "River Drip System", status: "Expansion Phase", deeds: "In Process" },
-        { id: "EST-011", name: "Kandy Knuckles View", region: "Kandy (Central)", acres: 30, vines: 120000, soilPh: 5.9, elevation: "620m", irrigation: "Mist-zone Agroforestry", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-012", name: "Teldeniya Organic Estate", region: "Kandy (Central)", acres: 40, vines: 160000, soilPh: 6.1, elevation: "540m", irrigation: "Forest Canopy", status: "Harvest Ready", deeds: "Registered" },
-        { id: "EST-013", name: "Gampola Riverbank", region: "Kandy (Central)", acres: 28, vines: 112000, soilPh: 6.3, elevation: "490m", irrigation: "Riparian Shade", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-014", name: "Nawalapitiya Foothills", region: "Kandy (Central)", acres: 36, vines: 144000, soilPh: 5.8, elevation: "680m", irrigation: "High Altitude Drip", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-015", name: "Kurunegala West", region: "North Western", acres: 65, vines: 260000, soilPh: 6.6, elevation: "140m", irrigation: "Solar Pumping Network", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-016", name: "Melsiripura Spice Valley", region: "North Western", acres: 52, vines: 208000, soilPh: 6.4, elevation: "210m", irrigation: "Micro-sprinklers", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-017", name: "Ibbagamuwa Center", region: "North Western", acres: 45, vines: 180000, soilPh: 6.5, elevation: "160m", irrigation: "Intensive Shade Nets", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-018", name: "Polgahawela Agro Grounds", region: "North Western", acres: 34, vines: 136000, soilPh: 6.3, elevation: "120m", irrigation: "Bio-nutrient Trellises", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-019", name: "Kegalle Agro Estate", region: "Sabaragamuwa", acres: 44, vines: 176000, soilPh: 6.0, elevation: "250m", irrigation: "High Rainfall Canopy", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-020", name: "Mawanella Spice Sanctuary", region: "Sabaragamuwa", acres: 33, vines: 132000, soilPh: 6.2, elevation: "310m", irrigation: "Agro-tourism Hub", status: "Harvest Ready", deeds: "Registered" },
-        { id: "EST-021", name: "Mirigama Green", region: "Western", acres: 25, vines: 100000, soilPh: 6.4, elevation: "80m", irrigation: "Greenhouse Curing Zone", status: "Active Cultivation", deeds: "Registered" },
-        { id: "EST-022", name: "Attanagalla Propagation Hub", region: "Western", acres: 22, vines: 88000, soilPh: 6.3, elevation: "70m", irrigation: "Botanical Nursery Lab", status: "Specialized Hub", deeds: "Registered" },
-        { id: "EST-023", name: "Pannampitiya IQF & Curing Base", region: "Matale (Central)", acres: 18, vines: 72000, soilPh: 6.4, elevation: "380m", irrigation: "Processing Industrial Hub", status: "Industrial Curing Hub", deeds: "Registered" },
-        { id: "EST-024", name: "Avissawella Reserve", region: "Western", acres: 38, vines: 152000, soilPh: 6.1, elevation: "110m", irrigation: "Commercial Curing Zone", status: "Active Cultivation", deeds: "Registered" }
+        { id: "EST-001", name: "Flagship Ross Estate", region: "Matale (Central)", acres: 48, vines: 192000, soilPh: 6.2, elevation: "440m", irrigation: "Automated Polytunnels & Drip", status: "Flagship Estate", deeds: "Registered Freehold" },
+        { id: "EST-002", name: "Udasgiriya Commercial Estate", region: "Matale (Central)", acres: 38, vines: 152000, soilPh: 6.4, elevation: "510m", irrigation: "Smart Fertigation Trellises", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-003", name: "Dombawela Prime Agro Park", region: "Matale (Central)", acres: 42, vines: 168000, soilPh: 6.1, elevation: "390m", irrigation: "CEA Polytunnels & Sensors", status: "Harvest Ready", deeds: "Registered Freehold" },
+        { id: "EST-004", name: "Pathingaskotuwa Estate", region: "Matale (Central)", acres: 35, vines: 140000, soilPh: 6.3, elevation: "360m", irrigation: "Controlled Drip Fertigation", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-005", name: "Selagama Highlands", region: "Matale (Central)", acres: 50, vines: 200000, soilPh: 6.2, elevation: "480m", irrigation: "Precision Mist Fertigation", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-006", name: "Rusigama Bourbon Reserve", region: "Matale (Central)", acres: 36, vines: 144000, soilPh: 6.3, elevation: "420m", irrigation: "Canopy Shade System", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-007", name: "Raththota Agro Reserve", region: "Matale (Central)", acres: 45, vines: 180000, soilPh: 6.4, elevation: "530m", irrigation: "Biodiverse Shade & Drip", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-008", name: "Kawdupalalla Commercial", region: "Matale (Central)", acres: 55, vines: 220000, soilPh: 6.4, elevation: "310m", irrigation: "Smart Drip Fertigation", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-009", name: "Nawaland Bourbon Fields", region: "Matale (Central)", acres: 40, vines: 160000, soilPh: 6.5, elevation: "290m", irrigation: "Automated Fertigation", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-010", name: "Medalanda Agro Unit", region: "Matale (Central)", acres: 32, vines: 128000, soilPh: 6.2, elevation: "340m", irrigation: "Precision Sensors & Trellises", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-011", name: "Udugama Agro Center", region: "Southern / Central", acres: 30, vines: 120000, soilPh: 6.0, elevation: "180m", irrigation: "Mist-zone Agroforestry", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-012", name: "Kosgolla Organic Estate", region: "Central Highlands", acres: 40, vines: 160000, soilPh: 6.1, elevation: "540m", irrigation: "Forest Canopy & Drip", status: "Harvest Ready", deeds: "Registered Freehold" },
+        { id: "EST-013", name: "Grasmere Agro Reserve", region: "Central Highlands", acres: 28, vines: 112000, soilPh: 6.3, elevation: "490m", irrigation: "Riparian Shade Trellises", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-014", name: "Welangahawatta Foothills", region: "Central Highlands", acres: 36, vines: 144000, soilPh: 5.8, elevation: "680m", irrigation: "High Altitude Drip", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-015", name: "Kothmale Mountain View", region: "Central Highlands", acres: 65, vines: 260000, soilPh: 6.0, elevation: "720m", irrigation: "Micro-drip Network", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-016", name: "Dolosbage Agro Valley", region: "Central Highlands", acres: 52, vines: 208000, soilPh: 6.2, elevation: "650m", irrigation: "High-Rainfall Terraces", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-017", name: "Pallepola Agro Valley", region: "Matale (Central)", acres: 45, vines: 180000, soilPh: 6.5, elevation: "360m", irrigation: "Intensive Shade & Drip", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-018", name: "Palapathwala Reserve", region: "Matale (Central)", acres: 34, vines: 136000, soilPh: 6.3, elevation: "440m", irrigation: "Automated Polytunnels", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-019", name: "Galaha Highland Park", region: "Central Province", acres: 44, vines: 176000, soilPh: 6.0, elevation: "590m", irrigation: "Canopy Shade System", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-020", name: "Gampola Agro Sanctuary", region: "Central Province", acres: 33, vines: 132000, soilPh: 6.2, elevation: "490m", irrigation: "Agroforestry Hub", status: "Harvest Ready", deeds: "Registered Freehold" },
+        { id: "EST-021", name: "Laggala Knuckles Buffer", region: "Central Province", acres: 38, vines: 152000, soilPh: 6.1, elevation: "510m", irrigation: "Sub-montane Micro-climate", status: "Active Cultivation", deeds: "Registered Freehold" },
+        { id: "EST-022", name: "Puttalam Smart Farm", region: "North Western", acres: 50, vines: 200000, soilPh: 6.6, elevation: "40m", irrigation: "Precision Solar Desal Drip", status: "Specialized Hub", deeds: "Registered Freehold" },
+        { id: "EST-023", name: "Dambulla Smart Agri Park", region: "Matale (Central)", acres: 70, vines: 280000, soilPh: 6.4, elevation: "280m", irrigation: "Smart CEA Park & Curing Base", status: "Industrial Agri Park", deeds: "Registered Freehold" },
+        { id: "EST-024", name: "Pannampitiya Curing Base", region: "Matale (Central)", acres: 25, vines: 100000, soilPh: 6.3, elevation: "380m", irrigation: "Export Spice Milling Hub", status: "Industrial Curing Hub", deeds: "Registered Freehold" }
       ];
 
       const filteredEstates = estatesDataset.filter(e => {
@@ -347,6 +387,11 @@
         return matchRegion && matchSearch;
       });
 
+      const filteredFacilities = industrialFacilities.filter(f => {
+        if (facilityCategoryFilter === 'All') return true;
+        return f.category.includes(facilityCategoryFilter);
+      });
+
       const handleChatSubmit = async (e, customPrompt) => {
         if (e) e.preventDefault();
         const userMessage = (customPrompt || chatInput).trim();
@@ -354,25 +399,46 @@
         setChatInput('');
         setChatMessages(prev => [...prev, { role: 'user', text: userMessage }]);
         setIsGenerating(true);
-        setThoughtBanner('Analyzing models & agronomic parameters...');
+        setThoughtBanner('Analyzing Master Prospectus (2026 V2) & agronomic parameters...');
 
         // Intelligent client-side analytical engine (100% works on mobile, GitHub Pages, offline)
         setTimeout(() => {
           const lower = userMessage.toLowerCase();
-          let fallback = "Agroventures Global Holdings manages 24 commercial estates targeting USD 1B in national exports. We provide registered Freehold Title Deeds in Matale and structured contractual returns (e.g. 10P Triple Benefit Plan with Rs. 21,972 monthly rental). Please view our 'Analytics' and 'ROI Calc' tabs for live projections.";
-          let suggestions = ["Calculate 10P vs 40P Cash Flow", "Show 5-Year Cured Vanilla Yields", "Explain Matale Freehold Deeds"];
+          let fallback = "Agroventures Plantations (Pvt) Ltd operates 24 commercial estates and 8 industrial processing facilities under Agro Ventures Global Holdings. We provide registered Freehold Title Deeds in Matale, a 5-Year Cash Flow Waterfall yielding a 61.5% Unlevered IRR (515% net cash-on-cash return), and multi-vertical corporate solvency backing. Please view our 'Analytics' and 'ROI Calc' tabs for live projections.";
+          let suggestions = ["Show 5-Year Cash Flow Waterfall", "Explain WACC & Beta Compression", "View 8 Industrial Facilities"];
 
-          if (lower.includes('40p') || lower.includes('40 perch')) {
+          if (lower.includes('wacc') || lower.includes('beta') || lower.includes('capm') || lower.includes('compression')) {
+            fallback = "### Financial Mechanics: CAPM & Enterprise WACC Compression\n\n- **Cost of Equity (CAPM):** $K_e = R_f + \\beta \\times [E(R_m) - R_f]$\n- **Weighted Average Cost of Capital:** $\\text{WACC} = (E/V \\times K_e) + (D/V \\times K_d \\times [1 - T])$\n\n**Beta Compression Strategy:**\nStandalone agricultural projects face punitive discount rates from single-crop risks and localized monsoons. Agroventures eliminates unsystematic asset risk by combining **24 diversified regional estates** and **8 multi-vertical processing facilities** (tea, bio-fertilizer, coconut). This significantly compresses asset beta ($\\beta$), lowering enterprise WACC and dramatically expanding Net Present Value (NPV) for investors.";
+            suggestions = ["Show 5-Year Cash Flow Waterfall", "View Stress-Testing Scenarios", "Explain Triple-Layer Capital Protection"];
+          } else if (lower.includes('waterfall') || lower.includes('cash flow schedule') || lower.includes('payout schedule')) {
+            fallback = "### 5-Year Cash Flow Waterfall Schedule (10-Perch Module)\n\n- **Year 0:** (Rs. 1,000,000) Initial Capital Placement\n- **Year 1:** **Rs. 150,000** Net (15% p.a. Corporate Coupon)\n- **Year 2:** **Rs. 150,000** Net (15% p.a. Corporate Coupon)\n- **Year 3:** **Rs. 1,170,000** Net (12 kg cured @ Rs. 150k floor)\n- **Year 4:** **Rs. 2,340,000** Net (24 kg cured @ Rs. 150k floor)\n- **Year 5:** **Rs. 2,340,000** Net (24 kg cured @ Rs. 150k floor)\n\n**Cumulative Performance Metrics:**\n- **Total Investor Net Payout:** **Rs. 6,150,000**\n- **Net Cash Profit:** **Rs. 5,150,000** (515% Net Cash-on-Cash Return)\n- **Unlevered IRR:** **61.5%**\n- **Capital Payback Period:** **36 Months**\n- **Retained Freehold Land Equity:** **> Rs. 2,000,000** (Matale Land Registry)";
+            suggestions = ["Show Stress Test Scenarios", "Calculate 40P Executive Tier", "How is Freehold Deed Registered?"];
+          } else if (lower.includes('stress') || lower.includes('scenario') || lower.includes('downside') || lower.includes('shock') || lower.includes('sensitivity')) {
+            fallback = "### Dynamic Sensitivity & Stress-Testing Scenarios\n\n1. **Base Case Target:** $500/kg (150k LKR), FX 300 LKR/$1 → **61.5% IRR**; exceeds institutional hurdle rates.\n2. **Severe Downside Shock:** $350/kg (105k LKR), FX 330 LKR/$1, +15% labor inflation, 15% yield decline → **Capital fully preserved** via freehold land backing (>200,000 LKR/perch baseline).\n3. **Bull Market Surge:** $600/kg (180k LKR), FX 280 LKR/$1, automated curing & premium 2.2% vanillin → **IRR exceeds 75%** (top-decile PE yield).";
+            suggestions = ["Show WACC & CAPM Model", "View 8 Industrial Facilities", "Book Estate Inspection Visit"];
+          } else if (lower.includes('facility') || lower.includes('facilities') || lower.includes('factories') || lower.includes('tea') || lower.includes('coconut')) {
+            fallback = "### 8 Specialized Industrial Facilities Footprint\n\n1. **Pannampitiya Export Spice Milling** (Matale) – Centralized curing & vacuum conditioning (150 MT/yr)\n2. **Avonleahill Bio-Dynamic Tea** (Diyathalawa) – High-altitude orthodox manufacturing unit\n3. **Jamesvalley Organic Green Tea** (Gampola) – Certified solar-assisted green tea processing plant\n4. **Kingslynn Specialty Teas** – Artisanal single-origin white tea and silver tips\n5. **Makandura Coconut Milk & Virgin Oil** – Cold-pressed virgin coconut oil & aseptic milk (120,000 L/mo)\n6. **Naula Closed-Loop Bio-Fertilizer Plant** – 400 MT/yr anaerobic liquid vermiwash\n7. **The Vanilla Shop** (525 Union Place, Colombo 02) – Flagship retail showroom & investor lounge\n8. **Bio Foods (Est. 1993)** – Organic processing partner with 30+ years of European/US export trade";
+            suggestions = ["Show 24 Nationwide Estates", "View Verified Corporate Accounts", "Contact Ayaz Azeez"];
+          } else if (lower.includes('bank') || lower.includes('banking') || lower.includes('hnb') || lower.includes('sampath') || lower.includes('account')) {
+            fallback = "### Verified Corporate Banking Channels\n\nAll investor subscriptions must be routed strictly through verified accounts under **Agro Ventures Plantations (Pvt) Ltd**:\n\n1. **Hatton National Bank PLC (HNB)** (Battaramulla Branch)\n   - **Corporate Current A/C:** `085010031565`\n   - **Business Savings A/C:** `085020329094`\n\n2. **Sampath Bank PLC** (Gothatuwa New Town Branch)\n   - **Corporate Current A/C:** `017311001963`\n   - **Mobile Merchant Code:** `AgroVentures`";
+            suggestions = ["What legal documents will I receive?", "Show 5-Year Cash Flow Waterfall", "Contact Ayaz on WhatsApp"];
+          } else if (lower.includes('iso') || lower.includes('cert') || lower.includes('kpmg') || lower.includes('audit') || lower.includes('great place')) {
+            fallback = "### Institutional Accreditations & Corporate Governance\n\n- **ISO 22000:2018 Food Safety Management System:** Cert No. `5WQ4ETCU20251229LKAFS18T` (accredited by UAF & IAF).\n- **Corporate Advisory Partnership:** Official advisory engagement with **KPMG Sri Lanka**.\n- **Great Place to Work™ 2025–2026:** Ranked **#04** across Sri Lanka Manufacturing.\n- **Phytosanitary & Quarantine:** Consignments verified by the National Plant Quarantine Service; compliant with **U.S. FDA** registration and **EU Organic** Directives.";
+            suggestions = ["Show Triple-Layer Security", "View Verified Bank Accounts", "Open Business Card"];
+          } else if (lower.includes('onboarding') || lower.includes('document') || lower.includes('receipt') || lower.includes('survey')) {
+            fallback = "### Legal Due Diligence & Execution Documentation\n\nUpon onboarding, every investor receives:\n1. **Registered Freehold Title Deed:** Executed by independent Notary Public and registered at Land Registry Office of Matale.\n2. **5-Year Tripartite Cultivation Agreement:** Binding turnkey operational management contract and profit distribution rules.\n3. **Cadastral Survey Plan:** Prepared by licensed surveyor demarcating exact plot boundaries and road access.\n4. **Official Corporate Receipt & Bond Certificate:** Stamped acknowledging capital covenants and terms.";
+            suggestions = ["Show 5-Year Cash Flow Waterfall", "Contact Ayaz Azeez", "Open ROI Simulator"];
+          } else if (lower.includes('40p') || lower.includes('40 perch')) {
             fallback = "### 40 Perches Executive Tier Breakdown\n\n- **Initial Outlay:** Rs. 5,000,000 (Freehold Deed)\n- **Monthly Contractual Rental:** Rs. 104,166 / mo (60 Months)\n- **Total Rental Distribution:** Rs. 6,249,960\n- **Year 5 Buyback Covenant:** Rs. 12,500,000\n- **Total Cumulative Payout:** **Rs. 18,749,960**\n- **Multiple on Capital:** **3.75x** (Net Profit: Rs. 13.74 Million)\n\nAll funds are secured by 40 Perches registered in your name at the Matale Land Registry.";
             suggestions = ["Compare with 10P Tier", "How does Buyback work?", "View Legal Deeds Sample"];
           } else if (lower.includes('yield') || lower.includes('harvest') || lower.includes('ratio') || lower.includes('cured')) {
-            fallback = "### 5-Year Agronomic Harvest Matrix (Per 10P Unit = 120 Vines)\n\n- **Curing Ratio:** Strict 6:1 Green-to-Cured Bourbon Vanilla\n- **Years 1 & 2:** Rooting & vegetative growth (0 kg)\n- **Year 3:** 180 kg green pods → **30 kg cured vanilla** (Crop Value: Rs. 4.5M)\n- **Year 4:** 300 kg green pods → **50 kg cured vanilla** (Crop Value: Rs. 7.5M)\n- **Year 5:** 300 kg green pods → **50 kg cured vanilla** (Crop Value: Rs. 7.5M)\n\n**Total 5-Year Harvest:** **130 KG of export-grade Bourbon Vanilla** valued at **Rs. 19.5 Million** gross (based on USD 500/kg commodity benchmark).";
+            fallback = "### 5-Year Agronomic Harvest Matrix (Per 10P Unit = 120 Vines)\n\n- **Curing Ratio:** Strict 5:1 to 6:1 Green-to-Cured Bourbon Vanilla\n- **Vanillin Target:** 1.8% to 2.2% (surpasses Madagascar standard 1.4%–1.6%)\n- **Moisture Equilibrium:** 28% to 33% under vacuum conditioning\n- **Years 1 & 2:** Rooting & vegetative canopy (0 kg)\n- **Year 3:** 60 kg green pods → **12 kg cured vanilla** (Crop Value: Rs. 1.8M gross)\n- **Year 4:** 120 kg green pods → **24 kg cured vanilla** (Crop Value: Rs. 3.6M gross)\n- **Year 5:** 120 kg green pods → **24 kg cured vanilla** (Crop Value: Rs. 3.6M gross)\n\n**5-Year Cumulative Output:** Valued at **Rs. 9.30 Million** gross with **Rs. 6.15 Million** net realization to the investor.";
             suggestions = ["What are the monthly investor payouts?", "Which estates produce this?", "Download Cultivation Agreement"];
           } else if (lower.includes('deed') || lower.includes('legal') || lower.includes('matale')) {
             fallback = "### Legal Asset Security Structure\n\n1. **Registered Freehold Title Deeds:** Drafted by legal counsel and registered in the investor's legal name at the Matale Land Registry.\n2. **Tripartite Cultivation Agreement:** 5-year full management covenant with Agro Ventures Plantations (Pvt) Ltd.\n3. **Repurchase Covenant:** Mandatory corporate repurchase at month 60 eliminating liquidation risk.";
             suggestions = ["Download Legal Deed PDF", "View Company Profile Brochure", "Talk with Ayaz Azeez"];
           } else if (lower.includes('contact') || lower.includes('ayaz') || lower.includes('phone') || lower.includes('whatsapp')) {
-            fallback = "**Ayaz Azeez** (Regional Development Manager – Premier Business Division Western II)\n\n- **Direct Mobile:** +94 78 418 0639\n- **WhatsApp Official:** +94 77 470 9667\n- **Corporate Headquarters:** 525, Union Place, Colombo 02\n- **Email:** ayaz@agroventuresplantations.com";
+            fallback = "**Ayaz Azeez** (Regional Development Manager – Premier Business Division Western II)\n\n- **Direct Mobile:** +94 78 418 0639\n- **WhatsApp Official:** +94 77 470 9667\n- **Branch Office:** 525, Union Place, Colombo 02\n- **Headquarters:** 253, Kaduwela Rd, Battaramulla\n- **Email:** ayaz@agroventuresplantations.com";
             suggestions = ["Open WhatsApp Chat", "View Business Card", "Schedule Estate Visit"];
           }
 
@@ -385,6 +451,7 @@
           setIsGenerating(false);
         }, 350);
       };
+
 
       return (
         <div className="min-h-screen flex flex-col justify-between pb-24 md:pb-6 relative bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
@@ -634,7 +701,279 @@
 
                 </div>
 
-                {/* 3. Commercial Plantations Directory Table & Drawer */}
+                {/* 3. 5-Year Cash Flow Waterfall Schedule (PDF Section 4) */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3.5">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Institutional Financial Engineering</span>
+                        <span className="text-[9px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">10-Perch Commercial Module</span>
+                      </div>
+                      <h3 className="font-extrabold text-sm sm:text-base text-zinc-950 dark:text-zinc-50 mt-0.5">5-Year Cash Flow Distribution Waterfall Schedule</h3>
+                      <p className="text-[10px] sm:text-xs text-zinc-500">Contractual coupon disbursements during gestation + export realizations at full maturity.</p>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                      <span className="text-[10px] font-data bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-2.5 py-1 rounded-lg text-zinc-600 dark:text-zinc-300">
+                        Export Floor: 150,000 LKR/kg (~$500/kg)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 4 Primary Summary Telemetry Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                      <div className="text-[10px] text-zinc-400">Net Cash Profit</div>
+                      <div className="text-base sm:text-xl font-extrabold font-data text-emerald-600 dark:text-emerald-400 mt-0.5">Rs. 5,150,000</div>
+                      <div className="text-[9px] text-emerald-700 dark:text-emerald-300 font-bold mt-0.5">515% Net Cash-on-Cash</div>
+                    </div>
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                      <div className="text-[10px] text-zinc-400">Unlevered IRR</div>
+                      <div className="text-base sm:text-xl font-extrabold font-data text-amber-500 mt-0.5">61.5% IRR</div>
+                      <div className="text-[9px] text-zinc-500 mt-0.5">Substantial hurdle clearance</div>
+                    </div>
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                      <div className="text-[10px] text-zinc-400">Payback Period</div>
+                      <div className="text-base sm:text-xl font-extrabold font-data text-blue-500 mt-0.5">36 Months</div>
+                      <div className="text-[9px] text-zinc-500 mt-0.5">Capital fully amortized</div>
+                    </div>
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                      <div className="text-[10px] text-zinc-400">Retained Land Equity</div>
+                      <div className="text-base sm:text-xl font-extrabold font-data text-zinc-950 dark:text-zinc-50 mt-0.5">&gt; Rs. 2,000,000</div>
+                      <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">Matale Freehold Deed</div>
+                    </div>
+                  </div>
+
+                  {/* Waterfall Table */}
+                  <div className="overflow-x-auto custom-scroll">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 font-semibold font-data text-[10px] sm:text-[11px]">
+                          <th className="py-2.5 px-3">TIMELINE</th>
+                          <th className="py-2.5 px-3">OPERATIONAL PHASE</th>
+                          <th className="py-2.5 px-3">YIELD (GRN / CURED)</th>
+                          <th className="py-2.5 px-3">DISBURSEMENT MECHANISM</th>
+                          <th className="py-2.5 px-3 text-right">GROSS REVENUE</th>
+                          <th className="py-2.5 px-3 text-right">INVESTOR NET PAYOUT</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-100 dark:divide-zinc-850">
+                        {waterfallSchedule.map((row, idx) => (
+                          <tr key={idx} className={`hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition-colors ${row.highlight ? 'bg-amber-500/10 font-bold' : ''}`}>
+                            <td className="py-2.5 px-3 font-data font-bold text-amber-500">{row.year}</td>
+                            <td className="py-2.5 px-3 font-semibold text-zinc-900 dark:text-zinc-100">{row.phase}</td>
+                            <td className="py-2.5 px-3 font-data text-zinc-600 dark:text-zinc-300">{row.yieldGreen} / {row.yieldCured}</td>
+                            <td className="py-2.5 px-3 text-zinc-600 dark:text-zinc-400 text-[11px]">{row.mechanism}</td>
+                            <td className="py-2.5 px-3 font-data text-right text-zinc-600 dark:text-zinc-400">{row.grossRev}</td>
+                            <td className={`py-2.5 px-3 font-data font-extrabold text-right ${row.netPayout.startsWith('-') ? 'text-zinc-500' : 'text-emerald-600 dark:text-emerald-400'}`}>{row.netPayout}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t-2 border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/80 font-bold text-xs">
+                          <td colSpan="4" className="py-3 px-3 text-zinc-900 dark:text-white">5-Year Cumulative Realized Investor Payout</td>
+                          <td className="py-3 px-3 text-right font-data text-zinc-600 dark:text-zinc-400">9,300,000 LKR</td>
+                          <td className="py-3 px-3 text-right font-data text-emerald-600 dark:text-emerald-400 text-sm font-extrabold">6,150,000 LKR</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+
+                {/* 4. Dynamic Sensitivity & Scenario Stress-Testing Matrix (PDF Section 4) */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3.5">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
+                    <div>
+                      <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Dynamic Sensitivity & Risk Modeling</span>
+                      <h3 className="font-extrabold text-sm sm:text-base text-zinc-950 dark:text-zinc-50 mt-0.5">Scenario Stress-Testing Matrix</h3>
+                      <p className="text-[10px] sm:text-xs text-zinc-500">Evaluating investor outcomes against downside shocks, baseline projections, and commodity market surges.</p>
+                    </div>
+
+                    <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs">
+                      {['base', 'downside', 'bull'].map((scKey) => (
+                        <button
+                          key={scKey}
+                          onClick={() => setStressScenario(scKey)}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition capitalize ${stressScenario === scKey ? 'bg-amber-500 text-zinc-950 shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white'}`}
+                        >
+                          {scKey === 'base' ? 'Base Case' : scKey === 'downside' ? 'Downside Shock' : 'Bull Surge'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Selected Scenario Detailed Panel */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3 p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                    <div className="space-y-1">
+                      <div className="text-[10px] text-zinc-400 uppercase font-bold">Scenario Name</div>
+                      <div className="text-sm sm:text-base font-extrabold text-zinc-950 dark:text-white">{sensitivityScenarios[stressScenario].title}</div>
+                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border mt-1 ${sensitivityScenarios[stressScenario].badgeColor}`}>
+                        {sensitivityScenarios[stressScenario].irr} Output
+                      </span>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="text-[10px] text-zinc-400 uppercase font-bold">Export Cured Price</div>
+                      <div className="text-sm sm:text-base font-data font-extrabold text-amber-500">{sensitivityScenarios[stressScenario].price}</div>
+                      <div className="text-[10px] font-data text-zinc-500">{sensitivityScenarios[stressScenario].fxRate}</div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="text-[10px] text-zinc-400 uppercase font-bold">Operational Assumptions</div>
+                      <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-snug">{sensitivityScenarios[stressScenario].assumptions}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="text-[10px] text-zinc-400 uppercase font-bold">Portfolio Impact</div>
+                      <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 leading-snug">{sensitivityScenarios[stressScenario].impact}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. Financial Mechanics of CAPM & Enterprise WACC Compression (PDF Section 4) */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3.5">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
+                    <div>
+                      <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Financial Engineering</span>
+                      <h3 className="font-extrabold text-sm sm:text-base text-zinc-950 dark:text-zinc-50 mt-0.5">CAPM & Enterprise WACC Beta Compression</h3>
+                      <p className="text-[10px] sm:text-xs text-zinc-500">Eliminating unsystematic agricultural risk through geographic and industrial diversification.</p>
+                    </div>
+                    <span className="text-[10px] font-data bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-lg font-bold">
+                      CAPM Asset Optimization
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {/* Equation 1: Cost of Equity */}
+                    <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                      <div className="text-[10px] text-zinc-400 uppercase font-bold">Capital Asset Pricing Model (Cost of Equity)</div>
+                      <div className="p-2 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 text-center font-data font-bold text-amber-500 text-xs sm:text-sm">
+                        K_e = R_f + β × [ E(R_m) - R_f ]
+                      </div>
+                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        Standalone agricultural projects face punitive discount rates from single-crop risk and monsoon shocks. Agroventures combines <strong>24 diversified regional estates</strong>, compressing the asset beta (<strong>β</strong>) and lowering the required cost of equity (<strong>K_e</strong>).
+                      </p>
+                    </div>
+
+                    {/* Equation 2: Enterprise WACC */}
+                    <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                      <div className="text-[10px] text-zinc-400 uppercase font-bold">Weighted Average Cost of Capital (WACC)</div>
+                      <div className="p-2 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 text-center font-data font-bold text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm">
+                        WACC = (E/V × K_e) + (D/V × K_d × [ 1 - T ])
+                      </div>
+                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        Parent group cash flows across <strong>8 processing facilities</strong> (tea, bio-fertilizer, coconut) absorb gestation volatility. Lowering enterprise WACC dramatically expands the Net Present Value (<strong>NPV</strong>) of all future export distributions.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. Triple-Layer Asset Protection Framework (PDF Section 3) */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3.5">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
+                    <div>
+                      <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Capital Protection Architecture</span>
+                      <h3 className="font-extrabold text-sm sm:text-base text-zinc-950 dark:text-zinc-50 mt-0.5">Triple-Layer Investor Security Framework</h3>
+                      <p className="text-[10px] sm:text-xs text-zinc-500">Eliminating traditional agricultural and market risk through legal, agronomic, and corporate insulation.</p>
+                    </div>
+                    <span className="text-[10px] font-data bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg font-bold">
+                      100% Capital Insulated
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {capitalProtectionLayers.map((layer) => (
+                      <div key={layer.num} className="p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between space-y-2">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-data font-bold text-amber-500 text-xs">{layer.num}</span>
+                            <span className="text-[9px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold px-2 py-0.5 rounded-full">Secure</span>
+                          </div>
+                          <div className="font-extrabold text-zinc-950 dark:text-white text-xs sm:text-sm mt-1">{layer.layer}</div>
+                          <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-1.5 leading-relaxed">{layer.mech}</p>
+                        </div>
+                        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                          ✓ {layer.outcome}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 7. 8 Specialized Industrial Facilities Directory (PDF Section 1) */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3.5">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
+                    <div>
+                      <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Industrial Operating Footprint</span>
+                      <h3 className="font-extrabold text-sm sm:text-base text-zinc-950 dark:text-zinc-50 mt-0.5">8 Specialized Industrial Processing Facilities</h3>
+                      <p className="text-[10px] sm:text-xs text-zinc-500">Multi-vertical manufacturing units driving parent company solvency and export revenues.</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs">
+                      {['All', 'Spice Milling', 'Tea Manufacturing', 'Coconut Products', 'Bio-Fertilizer'].map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setFacilityCategoryFilter(cat)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${facilityCategoryFilter === cat ? 'bg-amber-500 text-zinc-950 shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white'}`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                    {filteredFacilities.map((fac) => (
+                      <div key={fac.id} className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between space-y-2">
+                        <div>
+                          <div className="flex justify-between items-center text-[10px]">
+                            <span className="font-data font-bold text-amber-500">{fac.id}</span>
+                            <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded font-semibold text-[9px]">{fac.cert}</span>
+                          </div>
+                          <div className="font-bold text-zinc-950 dark:text-white text-xs mt-1">{fac.name}</div>
+                          <div className="text-[10px] text-zinc-400">{fac.region} • <span className="text-amber-500 font-medium">{fac.category}</span></div>
+                          <p className="text-[10px] text-zinc-600 dark:text-zinc-400 mt-1.5 leading-snug">{fac.desc}</p>
+                        </div>
+                        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 text-[10px] font-data text-zinc-500 flex justify-between">
+                          <span>Capacity:</span>
+                          <span className="font-bold text-zinc-800 dark:text-zinc-200">{fac.cap}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 8. Automated CRM & Executive BI Telemetry (PDF Section 7) */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3.5">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
+                    <div>
+                      <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Enterprise Systems</span>
+                      <h3 className="font-extrabold text-sm sm:text-base text-zinc-950 dark:text-zinc-50 mt-0.5">Automated CRM Funnel & Farm-Level IoT Telemetry</h3>
+                      <p className="text-[10px] sm:text-xs text-zinc-500">Direct integration between investor relations, legal onboarding webhooks, and IoT sensors.</p>
+                    </div>
+                    <span className="text-[10px] font-data bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-2 py-1 rounded text-zinc-600 dark:text-zinc-300 font-semibold">
+                      ITIL 4 • CCNA • Zscaler Cloud
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                    {[
+                      { step: "01", title: "Automated Intake", desc: "WhatsApp API & web inquiry intake" },
+                      { step: "02", title: "Lead Qualification", desc: "Algorithmic profile evaluation" },
+                      { step: "03", title: "Instant VDR & NDA", desc: "Secure Virtual Data Room release" },
+                      { step: "04", title: "Contract Drafting", desc: "Automated 5-year tripartite agreement" },
+                      { step: "05", title: "Escrow & Deeds", desc: "Matale Land Registry deed tracking" },
+                    ].map((st) => (
+                      <div key={st.step} className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 text-center">
+                        <span className="text-[10px] font-data font-bold text-amber-500">{st.step}</span>
+                        <div className="font-bold text-xs text-zinc-900 dark:text-white mt-0.5">{st.title}</div>
+                        <div className="text-[9px] text-zinc-500 mt-1 leading-snug">{st.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 9. Commercial Plantations Directory Table & Drawer */}
                 <div className="p-4 sm:p-5 bg-white dark:bg-zinc-925 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3">
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2.5 pb-2.5 border-b border-zinc-200 dark:border-zinc-800">
                     <div>
@@ -1273,27 +1612,38 @@
     }
 
     // =========================================================================
-    // SLIDE CONTENT COMPONENTS
+    // SLIDE CONTENT COMPONENTS (MASTER EDITION 2026 V2)
     // =========================================================================
     function SlideCover({ isDark }) {
       return (
         <div className="space-y-3 sm:space-y-4">
           <div className="flex justify-between items-center">
             <AgroventuresPremierLogo className="h-8 sm:h-11" isDark={isDark} compactMobile={true} />
-            <span className="text-[9px] sm:text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">2026 Edition</span>
+            <span className="text-[9px] sm:text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold">
+              Master Edition 2026 V2
+            </span>
           </div>
           <div className="py-2 sm:py-3">
-            <span className="text-amber-500 font-bold text-[11px] sm:text-xs uppercase tracking-wider">Premier Circle Investment Prospectus</span>
-            <h1 className="text-2xl sm:text-5xl font-extrabold text-zinc-950 dark:text-white mt-1 leading-tight">Living Agricultural Assets Engineered for Long-Term Wealth</h1>
+            <div className="flex items-center gap-1.5 text-amber-500 font-bold text-[10px] sm:text-xs uppercase tracking-wider">
+              <span>CONFIDENTIAL INSTITUTIONAL PROSPECTUS</span>
+              <span>•</span>
+              <span className="text-zinc-400">PREMIER CIRCLE</span>
+            </div>
+            <h1 className="text-xl sm:text-4xl font-extrabold text-zinc-950 dark:text-white mt-1 leading-tight">
+              Master Investor Collateral & Operational Dossier
+            </h1>
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 mt-2 leading-relaxed">
-              Targeting USD 1 Billion in high-value spice exports for Sri Lanka by 2030 through commercial Bourbon vanilla cultivation across 24 prime estates, backed by registered Freehold Title Deeds.
+              Turnkey High-Density <em className="text-amber-500 not-italic font-semibold">Vanilla planifolia</em> Commercial Units • Deeded Land Asset Backing • Multi-Tier Group Solvency.
             </p>
+            <div className="text-[10px] text-zinc-400 mt-1">
+              Author: <strong>Ayaz Azeez</strong> (Regional Development Manager, Western Province Premier Business Circle) • Agroventures Plantations (Pvt) Ltd
+            </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 text-xs">
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Track Record</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">Founded 2016 (10+ Yrs)</div></div>
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Operating Scale</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">24 Plantations</div></div>
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Investor Base</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">12,440+ Clients</div></div>
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Asset Security</div><div className="font-bold text-amber-500 mt-0.5">Matale Freehold</div></div>
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">2030 Target</div><div className="font-bold text-amber-500 mt-0.5">$1.0 Billion Export</div></div>
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Commercial Footprint</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">4,000,000+ Vines</div></div>
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Estates & Facilities</div><div className="font-bold text-zinc-900 dark:text-white mt-0.5">24 Estates • 8 Factories</div></div>
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800"><div className="text-zinc-500 text-[10px]">Workplace Audit</div><div className="font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">Ranked #04 GPTW</div></div>
           </div>
         </div>
       );
@@ -1302,21 +1652,31 @@
     function SlideProfile() {
       return (
         <div className="space-y-3 sm:space-y-4">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Corporate Pedigree</span>
-          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Visionary Leadership & Purpose</h2>
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Executive Summary & Vision 2030</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Institutional Governance & Operating Footprint</h2>
           <p className="italic text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-900 p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 leading-relaxed">
-            "To revolutionize Sri Lanka's agricultural landscape by fostering sustainability, empowering local rural farming communities, and delivering world-class premium vanilla produce to global international markets." — Mr. Nilanga Karunarathne, Founder & Group Chairman
+            "Founded in 2016 on Trust, Sustainability, and Measurable Impact, cultivating, managing, and exporting high-value Vanilla planifolia ('Green Gold') on behalf of local private investors, HNWIs, family offices, and institutional syndicates." — Founder & Group Chairman Mr. Nilanga Karunarathne
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-amber-500 font-extrabold text-xl sm:text-2xl font-data">$1 Billion</div>
-              <div className="text-zinc-900 dark:text-white font-bold mt-1">National Export Vision by 2030</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Accelerating commercial agro-export trade balance through bourbon vanilla.</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-amber-500 font-extrabold font-data text-base sm:text-lg">10+ Years</div>
+              <div className="text-zinc-900 dark:text-white font-bold text-[11px] mt-0.5">Operating Track Record</div>
+              <div className="text-[9px] text-zinc-500 mt-0.5">Continuous growth since 2016</div>
             </div>
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-emerald-600 dark:text-emerald-400 font-extrabold text-xl sm:text-2xl font-data">4,000,000+</div>
-              <div className="text-zinc-900 dark:text-white font-bold mt-1">Targeted Commercial Vines</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Scientifically monitored micro-irrigation and shade-controlled canopy footprint.</div>
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-emerald-600 dark:text-emerald-400 font-extrabold font-data text-base sm:text-lg">645+ Staff</div>
+              <div className="text-zinc-900 dark:text-white font-bold text-[11px] mt-0.5">Workforce Force</div>
+              <div className="text-[9px] text-zinc-500 mt-0.5">Botanists, IoT engineers, advisors</div>
+            </div>
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-blue-500 font-extrabold font-data text-base sm:text-lg">12,440+</div>
+              <div className="text-zinc-900 dark:text-white font-bold text-[11px] mt-0.5">Satisfied Clients</div>
+              <div className="text-[9px] text-zinc-500 mt-0.5">Unblemished dividend record</div>
+            </div>
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-amber-500 font-extrabold font-data text-base sm:text-lg">KPMG & ISO</div>
+              <div className="text-zinc-900 dark:text-white font-bold text-[11px] mt-0.5">Corporate Governance</div>
+              <div className="text-[9px] text-zinc-500 mt-0.5">ISO 22000:2018 Certified</div>
             </div>
           </div>
         </div>
@@ -1324,24 +1684,24 @@
     }
 
     function SlideProfitEngine() {
-      const steps = [
-        ['01', 'CAPITAL ENTRY', 'Investor capital allocated directly to title registration and vine infrastructure.'],
-        ['02', 'LIVING ASSETS', 'Freehold land deeds registered at Matale Land Registry establish indisputable ownership.'],
-        ['03', 'SCIENTIFIC CULTIVATION', 'Plantation botanists manage pollination, trellising, and nutrient delivery.'],
-        ['04', 'VALUE CREATION', 'Curing at specialized facilities converts green beans to Bourbon vanilla (6:1 ratio).'],
-        ['05', 'RISK MITIGATION', 'Geographical diversification across 24 estates insulates against local disruptions.'],
-        ['06', 'STRUCTURED PAYOUT', 'Guaranteed monthly rentals (60 mos) and maturity repurchase covenant.']
+      const agronomySpecs = [
+        { label: "Vanillin Benchmark", val: "1.8% to 2.2%", note: "Surpassing Madagascar Bourbon standard of 1.4%–1.6%" },
+        { label: "Commodity Pricing", val: "$350 to $600 / kg", note: "Second most expensive spice in the world, trades like silver" },
+        { label: "Moisture Equilibrium", val: "28% to 33%", note: "Maintained under vacuum conditioning to preserve aromatics" },
+        { label: "Curing Ratio", val: "5:1 to 6:1 Ratio", note: "Enzymatic curing recovery (~16.7% to 20% gourmet vanilla)" },
+        { label: "Biological Maturation", val: "30-Month Trellis", note: "First harvest Month 30, scaling to peak yield at Years 4–5" },
+        { label: "Productive Lifespan", val: "15 to 20 Years", note: "Continuous regenerative production and crop yield" }
       ];
       return (
         <div className="space-y-3">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">The Profit Engine</span>
-          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Living Assets to Cash Flow</h2>
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">The "Green Gold" Asset Class</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Agronomy & Biochemical Curing Protocols</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {steps.map(([n, title, body]) => (
-              <div key={n} className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-                <div className="text-[10px] font-data text-amber-500 font-bold">{n}</div>
-                <div className="font-extrabold text-zinc-900 dark:text-white text-xs mt-0.5">{title}</div>
-                <div className="text-[9px] text-zinc-500 mt-0.5 leading-snug">{body}</div>
+            {agronomySpecs.map((s, idx) => (
+              <div key={idx} className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                <div className="text-[9px] font-bold text-zinc-400 uppercase">{s.label}</div>
+                <div className="font-extrabold font-data text-amber-500 text-xs sm:text-sm mt-0.5">{s.val}</div>
+                <div className="text-[9px] text-zinc-500 mt-0.5 leading-snug">{s.note}</div>
               </div>
             ))}
           </div>
@@ -1350,26 +1710,33 @@
     }
 
     function SlideScaleQuality() {
-      const items = [
-        ['24', 'Managed Estates', 'Diversified network across Central & Western provinces'],
-        ['4M+', 'Targeted Vines', 'Sri Lanka’s largest commercial vanilla footprint'],
-        ['USD 1B', '2030 Ambition', 'Direct national export contribution program'],
-        ['12,440+', 'Clients', 'Registered retail & corporate investor base'],
-        ['ISO 22000', 'Food Safety', 'Audited international standard for curing & packing'],
-        ['Rank #04', 'Great Place to Work', 'Workplace recognition in Sri Lanka Manufacturing 2026']
-      ];
       return (
         <div className="space-y-3">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Scale & Operating Platform</span>
-          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Commercial Scale & Audited Quality</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {items.map(([value, title, body], i) => (
-              <div key={i} className="p-2.5 sm:p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                <div className="text-lg sm:text-2xl font-extrabold font-data text-emerald-600 dark:text-emerald-300">{value}</div>
-                <div className="text-xs font-bold text-zinc-900 dark:text-white mt-0.5">{title}</div>
-                <div className="text-[9px] text-zinc-500 mt-0.5 leading-tight">{body}</div>
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Operating Scale & Infrastructure</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">24 Estates & 8 Industrial Facilities</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1.5">
+              <div className="font-extrabold text-zinc-900 dark:text-white text-xs flex items-center justify-between">
+                <span>24 Islandwide Estates Network</span>
+                <span className="text-[9px] bg-amber-500/10 text-amber-500 px-2 py-0.2 rounded font-bold">Matale & Central</span>
               </div>
-            ))}
+              <p className="text-[10px] text-zinc-500 leading-relaxed">
+                Flagship Ross Estate (Matale), Udasgiriya, Dombawela, Pathingaskotuwa, Selagama, Rusigama, Raththota, Kawdupalalla, Nawaland, Medalanda, Udugama, Kosgolla, Grasmere, Welangahawatta, Kothmale, Dolosbage, Pallepola, Palapathwala, Galaha, Gampola, Laggala, Puttalam, and Dambulla Smart Agri Park.
+              </p>
+            </div>
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1.5">
+              <div className="font-extrabold text-zinc-900 dark:text-white text-xs flex items-center justify-between">
+                <span>8 Specialized Industrial Facilities</span>
+                <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.2 rounded font-bold">Multi-Vertical</span>
+              </div>
+              <p className="text-[10px] text-zinc-500 leading-relaxed">
+                1. Pannampitiya Export Spice Milling • 2. Avonleahill Bio-Dynamic Tea • 3. Jamesvalley Organic Green Tea • 4. Kingslynn Specialty Teas • 5. Makandura Coconut Milk & Virgin Oil • 6. Naula Closed-Loop Bio-Fertilizer • 7. The Vanilla Shop (Colombo 02) • 8. Bio Foods (Est. 1993).
+              </p>
+            </div>
+          </div>
+          <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-wrap justify-between items-center text-[10px]">
+            <span className="text-zinc-600 dark:text-zinc-300">ISO 22000:2018 (Cert: <strong>5WQ4ETCU20251229LKAFS18T</strong>)</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold">Official KPMG Corporate Advisory Partnership</span>
           </div>
         </div>
       );
@@ -1378,26 +1745,35 @@
     function SlideEconomics() {
       return (
         <div className="space-y-3">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Agronomic Model</span>
-          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">5-Year Vanilla Benchmark</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">10 Perch Unit</div>
-              <div className="text-xl sm:text-2xl font-extrabold font-data text-zinc-950 dark:text-white mt-1">120 Living Vines</div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed">
-                Produces cumulative 5-year cured harvest of <strong className="text-emerald-600 dark:text-emerald-300 font-data">130 KG</strong> at strict 6:1 conversion ratio.
-              </div>
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Financial Modeling</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">5-Year Waterfall & Hurdle Rates</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-[9px] text-zinc-400">Net Cash Profit</div>
+              <div className="font-extrabold font-data text-emerald-600 dark:text-emerald-400 text-sm sm:text-base mt-0.5">Rs. 5,150,000</div>
+              <div className="text-[8px] text-emerald-700 dark:text-emerald-300">515% Cash-on-Cash</div>
             </div>
-            <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Commodity Benchmark</div>
-              <div className="text-xl sm:text-2xl font-extrabold font-data text-amber-500">Rs. 150,000 / KG</div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed">
-                Benchmark valuation anchored at USD 500/kg (LKR 300 FX), generating <strong className="text-zinc-900 dark:text-white font-data">Rs. 19.5 Million</strong> gross crop value.
-              </div>
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-[9px] text-zinc-400">Unlevered IRR</div>
+              <div className="font-extrabold font-data text-amber-500 text-sm sm:text-base mt-0.5">61.5% IRR</div>
+              <div className="text-[8px] text-zinc-500">Exceeds hurdle rates</div>
+            </div>
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-[9px] text-zinc-400">Capital Payback</div>
+              <div className="font-extrabold font-data text-blue-500 text-sm sm:text-base mt-0.5">36 Months</div>
+              <div className="text-[8px] text-zinc-500">Full capital returned</div>
+            </div>
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="text-[9px] text-zinc-400">Retained Land Equity</div>
+              <div className="font-extrabold font-data text-zinc-950 dark:text-white text-sm sm:text-base mt-0.5">&gt; Rs. 2,000,000</div>
+              <div className="text-[8px] text-emerald-600 dark:text-emerald-400">Matale Freehold Deed</div>
             </div>
           </div>
-          <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/30 text-[11px] text-zinc-700 dark:text-zinc-300">
-            <strong>Biological Liquidity:</strong> Biological crop production provides group financial liquidity to underwrite fixed monthly investor rentals regardless of harvest timing.
+          <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-[11px] space-y-1">
+            <div className="font-bold text-zinc-900 dark:text-white">Waterfall Schedule (10P Unit):</div>
+            <div className="text-zinc-600 dark:text-zinc-300">
+              Year 0: (-1.0M) Initial placement • Years 1 & 2: Rs. 150k/yr corporate coupon (15% p.a.) • Year 3: Rs. 1.17M net (12kg cured) • Years 4 & 5: Rs. 2.34M/yr net (24kg cured). Cumulative realized payout: <strong>Rs. 6,150,000 Net</strong>.
+            </div>
           </div>
         </div>
       );
@@ -1405,10 +1781,10 @@
 
     function SlideInvestmentPlans() {
       const tripleTiers = [
-        { p: 10, cost: 1054680, monthly: 21972, buyback: 2636700, total: 3955020 },
-        { p: 20, cost: 2500000, monthly: 52083, buyback: 6250000, total: 9374980 },
-        { p: 40, cost: 5000000, monthly: 104166, buyback: 12500000, total: 18749960 },
-        { p: 90, cost: 10000000, monthly: 208333, buyback: 25000000, total: 37499980 },
+        { p: 10, cost: 1054680, monthly: 21972, buyback: 2636700, total: 3955020, tag: 'Universal Entry' },
+        { p: 20, cost: 2500000, monthly: 52083, buyback: 6250000, total: 9374980, tag: 'Growth Tier' },
+        { p: 40, cost: 5000000, monthly: 104166, buyback: 12500000, total: 18749960, tag: 'Executive Tier' },
+        { p: 90, cost: 10000000, monthly: 208333, buyback: 25000000, total: 37499980, tag: 'Commercial Prime' },
         { p: 230, cost: 25000000, monthly: 520833, buyback: 62500000, total: 93749980, tag: 'Premier Circle' },
         { p: 940, cost: 100000000, monthly: 2083333, buyback: 250000000, total: 374999980, tag: 'VIP Club' }
       ];
@@ -1420,20 +1796,23 @@
             {tripleTiers.map((t) => (
               <div key={t.p} className="grid grid-cols-4 gap-1 p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 items-center text-[11px]">
                 <div>
-                  <div className="font-extrabold font-data text-zinc-900 dark:text-white">{t.p}P</div>
+                  <div className="font-extrabold font-data text-zinc-900 dark:text-white flex items-center gap-1">
+                    <span>{t.p}P</span>
+                    <span className="text-[8px] bg-zinc-200 dark:bg-zinc-800 px-1 rounded text-zinc-500">{t.tag}</span>
+                  </div>
                   <div className="text-[9px] text-zinc-500 font-data">Rs. {(t.cost / 1000000).toFixed(2)}M</div>
                 </div>
                 <div>
                   <div className="text-[8px] text-zinc-400">Monthly</div>
-                  <div className="text-emerald-600 dark:text-emerald-300 font-bold font-data">Rs. {t.monthly.toLocaleString()}</div>
+                  <div className="text-emerald-600 dark:text-emerald-300 font-bold font-data text-xs">Rs. {t.monthly.toLocaleString()}</div>
                 </div>
                 <div>
                   <div className="text-[8px] text-zinc-400">Buyback</div>
-                  <div className="text-amber-500 font-bold font-data">Rs. {(t.buyback / 1000000).toFixed(2)}M</div>
+                  <div className="text-amber-500 font-bold font-data text-xs">Rs. {(t.buyback / 1000000).toFixed(2)}M</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[8px] text-zinc-400">Total Payout</div>
-                  <div className="text-zinc-900 dark:text-white font-extrabold font-data">Rs. {(t.total / 1000000).toFixed(2)}M</div>
+                  <div className="text-[8px] text-zinc-400">Total Return</div>
+                  <div className="text-zinc-900 dark:text-white font-extrabold font-data text-xs">Rs. {(t.total / 1000000).toFixed(2)}M</div>
                 </div>
               </div>
             ))}
@@ -1445,17 +1824,24 @@
     function SlideRiskManagement() {
       return (
         <div className="space-y-3">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Governance</span>
-          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Enterprise Risk Controls</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-amber-500 font-bold text-xs sm:text-sm">Geographical Diversification</div>
-              <div className="text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed text-[11px]">24 independent plantation locations prevent localized weather or pest events from impacting group revenue.</div>
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Capital Protection Architecture</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Triple-Layer Security & Stress Testing</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="font-bold text-amber-500 text-xs">Layer 1: Real Estate</div>
+              <p className="text-[10px] text-zinc-600 dark:text-zinc-400 mt-1">Freehold deed registered at Matale Land Registry (&gt;200k/perch baseline, &gt;100% equity cushion).</p>
             </div>
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-emerald-600 dark:text-emerald-400 font-bold text-xs sm:text-sm">Audited Quality Systems</div>
-              <div className="text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed text-[11px]">ISO 22000:2018 food safety standards guarantees export-readiness and long-term buyer contracts in international markets.</div>
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="font-bold text-emerald-600 dark:text-emerald-400 text-xs">Layer 2: Agronomic CEA</div>
+              <p className="text-[10px] text-zinc-600 dark:text-zinc-400 mt-1">Controlled-Environment Agriculture, industrial polytunnels & automated drip insulates against weather.</p>
             </div>
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="font-bold text-blue-500 text-xs">Layer 3: Solvency Backing</div>
+              <p className="text-[10px] text-zinc-600 dark:text-zinc-400 mt-1">Parent group multi-revenue cash flows across tea and milling guarantee coupon distributions.</p>
+            </div>
+          </div>
+          <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-600 dark:text-zinc-300">
+            <strong>Stress-Testing Validation:</strong> Under a severe downside shock ($350/kg cured price, +15% labor inflation, 15% yield loss), capital is fully preserved through freehold real estate equity.
           </div>
         </div>
       );
@@ -1464,28 +1850,25 @@
     function SlideContractualStructure() {
       return (
         <div className="space-y-3">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Legal Architecture</span>
-          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Tripartite Title Deeds & Security</h2>
-          <ul className="text-xs space-y-2 text-zinc-700 dark:text-zinc-300">
-            <li className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">01</span>
-              <div>
-                <strong className="text-zinc-900 dark:text-white">Registered Freehold Deeds:</strong> Registered directly in investor's legal name at the Land Registry of Matale.
-              </div>
-            </li>
-            <li className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">02</span>
-              <div>
-                <strong className="text-zinc-900 dark:text-white">5-Year Cultivation Agreement:</strong> Assigning full agronomic management, maintenance, and insurance to Agroventures.
-              </div>
-            </li>
-            <li className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-2">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">03</span>
-              <div>
-                <strong className="text-zinc-900 dark:text-white">Repurchase Covenant:</strong> Contractual repurchase agreement at month 60, ensuring guaranteed liquidity.
-              </div>
-            </li>
-          </ul>
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Institutional Wealth Advisory</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">SPVs, Family Trusts & Escrow Governance</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="font-bold text-zinc-900 dark:text-white">SPV Ring-Fencing</div>
+              <p className="text-[10px] text-zinc-500 mt-1">Operating assets and plantation leases segregated within project-specific SPVs, insulating master trusts.</p>
+            </div>
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="font-bold text-zinc-900 dark:text-white">Private Family Trusts</div>
+              <p className="text-[10px] text-zinc-500 mt-1">Real estate deeds registered directly under designated family trustees, ensuring seamless succession without probate delays.</p>
+            </div>
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="font-bold text-zinc-900 dark:text-white">Institutional Escrow</div>
+              <p className="text-[10px] text-zinc-500 mt-1">Capital disbursed from milestone-based escrow against certified agronomic verification gates (Buildout, Inoculation, Harvest).</p>
+            </div>
+          </div>
+          <div className="text-[10px] text-zinc-400">
+            Enterprise frameworks: Conforms to ITIL 4 Managing Professional standards, CCNA networking, and Zscaler Cloud Security.
+          </div>
         </div>
       );
     }
@@ -1493,21 +1876,25 @@
     function SlideBanking() {
       return (
         <div className="space-y-3">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Banking Channels</span>
-          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Official Commercial Bank Channels</h2>
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Due Diligence & Banking</span>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 dark:text-white">Verified Commercial Banking Channels</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
               <div className="font-bold text-zinc-900 dark:text-white text-xs sm:text-sm">Hatton National Bank PLC</div>
-              <div className="text-[10px] text-zinc-500">Battaramulla Branch</div>
-              <div className="font-data text-emerald-600 dark:text-emerald-400 font-bold mt-1 text-[11px]">Current A/C: 085010031565</div>
-              <div className="font-data text-zinc-500 text-[10px]">Savings A/C: 085020329094</div>
+              <div className="text-[10px] text-zinc-500">Battaramulla Branch • Agro Ventures Plantations (Pvt) Ltd</div>
+              <div className="font-data text-emerald-600 dark:text-emerald-400 font-bold mt-1 text-[11px]">Corporate Current A/C: 085010031565</div>
+              <div className="font-data text-zinc-500 text-[10px]">Business Savings A/C: 085020329094</div>
             </div>
             <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
               <div className="font-bold text-zinc-900 dark:text-white text-xs sm:text-sm">Sampath Bank PLC</div>
-              <div className="text-[10px] text-zinc-500">Gothatuwa New Town Branch</div>
-              <div className="font-data text-emerald-600 dark:text-emerald-400 font-bold mt-1 text-[11px]">Current A/C: 017311001963</div>
+              <div className="text-[10px] text-zinc-500">Gothatuwa New Town Branch • Agro Ventures Plantations (Pvt) Ltd</div>
+              <div className="font-data text-emerald-600 dark:text-emerald-400 font-bold mt-1 text-[11px]">Corporate Current A/C: 017311001963</div>
               <div className="text-[10px] text-zinc-500 mt-0.5">Merchant Code: <strong className="text-amber-500">AgroVentures</strong></div>
             </div>
+          </div>
+          <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-500 flex justify-between">
+            <span>Execution Pack: Freehold Deed • Tripartite Agreement • Cadastral Survey • Bond Certificate</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold">100% Verified</span>
           </div>
         </div>
       );
@@ -1516,7 +1903,7 @@
     function SlideContact({ openBusinessCard }) {
       return (
         <div className="space-y-3">
-          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Advisory Consultation</span>
+          <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Premier Circle Consultation</span>
           <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800">
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-amber-500/50 bg-zinc-200 dark:bg-zinc-800 flex-shrink-0">
               <ResilientAssetImg basePath="./Assets/My Details/" filename="Ayaz Azeez - Potrait" alt="Ayaz Azeez" className="w-full h-full object-cover" />
@@ -1525,25 +1912,28 @@
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <h2 className="text-base sm:text-xl font-extrabold text-zinc-950 dark:text-white">Ayaz Azeez</h2>
                 {openBusinessCard && (
-                  <button onClick={openBusinessCard} className="self-start sm:self-auto bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-lg border border-amber-500/40">
+                  <button onClick={openBusinessCard} className="self-start sm:self-auto bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-amber-500/40">
                     📇 Business Card
                   </button>
                 )}
               </div>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Regional Development Manager (Premier Business Division)</p>
-              <p className="text-[9px] text-zinc-500 font-data">DICT, HND (HONS), BSc (Hons) in Computer Network</p>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Regional Development Manager (Western Province Premier Business Circle)</p>
+              <p className="text-[9px] text-zinc-500 font-data">DICT, HND (HONS), BSc (Hons) in Computer Network • Agroventures Global Holdings</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <a href="tel:+94784180639" className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-bold text-zinc-900 dark:text-white text-center hover:border-zinc-400 transition">Direct: +94 78 418 0639</a>
             <a href="https://wa.me/94774709667" target="_blank" className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-center transition shadow-sm">WhatsApp: +94 77 470 9667</a>
           </div>
-          <div className="text-[10px] text-zinc-500">
-            525, Union Place, Colombo 02 • ayaz@agroventuresplantations.com • Agroventures.lk
+          <div className="text-[10px] text-zinc-500 flex flex-col sm:flex-row justify-between gap-1">
+            <span>Branch: 525, Union Place, Colombo 02</span>
+            <span>HQ: 253, Kaduwela Rd, Battaramulla</span>
+            <span>ayaz@agroventuresplantations.com</span>
           </div>
         </div>
       );
     }
+
 
     ReactDOM.render(<App />, document.getElementById('root'));
   </script>
