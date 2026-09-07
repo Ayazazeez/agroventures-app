@@ -2,7 +2,7 @@
 <html lang="en" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>Agroventures Premier Circle | Western Province Division | Sovereign Land & Gourmet Vanilla Export</title>
   <meta name="description" content="Official Institutional Wealth Platform of Agroventures Premier (Western Province Division). Own freehold deeded land in Matale with 25% annual returns and 150% capital buyback.">
   <meta name="theme-color" content="#04070D">
@@ -94,6 +94,27 @@
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
+    
+    @supports(padding: max(0px)) {
+      .safe-bottom {
+        padding-bottom: max(env(safe-area-inset-bottom), 12px);
+      }
+      .safe-top {
+        padding-top: max(env(safe-area-inset-top), 12px);
+      }
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Touch friendly active state */
+    .tap-highlight-transparent {
+      -webkit-tap-highlight-color: transparent;
+    }
+
     ::-webkit-scrollbar {
       width: 7px;
       height: 7px;
@@ -485,6 +506,161 @@
     // =========================================================================
     // MAIN APPLICATION COMPONENT
     // =========================================================================
+    
+    // =========================================================================
+    // LUXURY VIDEO PLAYER COMPONENT (MOBILE-FIRST, PROGRESSIVE STREAMING)
+    // =========================================================================
+    function LuxuryVideoPlayer({
+      videoFile,
+      posterFile,
+      title,
+      duration = "0:56",
+      badge = "HD 1080p",
+      onExpand = null
+    }) {
+      const [isPlaying, setIsPlaying] = useState(false);
+      const [hasError, setHasError] = useState(false);
+      const videoRef = useRef(null);
+
+      const videoSources = [
+        './Assets/videos/' + videoFile,
+        './assets/videos/' + videoFile,
+        './Assets/Our Sevice Portfolio/' + (videoFile.includes('service') ? 'Service Overview - Core Offering.mp4' : 'Case Study - TrueAsset Agri-Growth.mov')
+      ];
+
+      const posterSources = [
+        './Assets/videos/' + posterFile,
+        './assets/videos/' + posterFile
+      ];
+
+      const handlePlayClick = () => {
+        if (videoRef.current) {
+          if (videoRef.current.paused) {
+            videoRef.current.play().then(() => {
+              setIsPlaying(true);
+            }).catch(err => {
+              console.warn("Autoplay interaction note:", err);
+              setIsPlaying(true);
+            });
+          } else {
+            videoRef.current.pause();
+            setIsPlaying(false);
+          }
+        }
+      };
+
+      return (
+        <div className="relative w-full rounded-2xl overflow-hidden bg-[#03060C] border border-[#D4AF37]/40 shadow-inner group transition-all duration-300">
+          {/* Ambient Blurred Background (illuminates player frame without cropping 9:16 video) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30 select-none">
+            <img 
+              src={posterSources[0]} 
+              alt="" 
+              className="w-full h-full object-cover blur-2xl scale-125"
+              onError={(e) => { e.target.src = posterSources[1]; }}
+            />
+          </div>
+
+          {/* Video Player Box */}
+          <div className="relative z-10 w-full h-[360px] sm:h-[440px] md:h-[480px] flex items-center justify-center">
+            <video
+              ref={videoRef}
+              className="w-full h-full object-contain cursor-pointer"
+              controls={isPlaying}
+              playsInline
+              preload="metadata"
+              poster={posterSources[0]}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onError={() => setHasError(true)}
+              onClick={handlePlayClick}
+            >
+              {videoSources.map((src, idx) => (
+                <source key={idx} src={src} type="video/mp4" />
+              ))}
+              Your browser does not support HTML5 video playback.
+            </video>
+
+            {/* Luxury Play Overlay (visible before playing) */}
+            {!isPlaying && (
+              <div 
+                onClick={handlePlayClick}
+                className="absolute inset-0 z-20 bg-gradient-to-t from-black/85 via-black/40 to-black/20 flex flex-col items-center justify-between p-4 sm:p-6 cursor-pointer hover:bg-black/35 transition-all duration-300"
+              >
+                {/* Top Badges */}
+                <div className="w-full flex items-center justify-between">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-data bg-[#0B111E]/90 border border-[#D4AF37]/40 text-[#F3E5AB]">
+                    {badge}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-data bg-black/70 border border-slate-700 text-slate-300 flex items-center gap-1">
+                    <span>⏱️</span> {duration}
+                  </span>
+                </div>
+
+                {/* Central Glowing Play Button */}
+                <div className="flex flex-col items-center gap-3 my-auto">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-[#D4AF37] via-[#FFF2C5] to-[#AA7C11] text-[#04070D] flex items-center justify-center shadow-[0_0_35px_rgba(212,175,55,0.6)] group-hover:scale-110 transition-transform duration-300 active:scale-95">
+                    <svg className="w-7 h-7 sm:w-9 sm:h-9 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs sm:text-sm font-black tracking-widest text-[#F3E5AB] uppercase drop-shadow">
+                      TAP TO PLAY VIDEO
+                    </div>
+                    <div className="text-[11px] text-slate-300 font-medium flex items-center justify-center gap-1 mt-0.5">
+                      <span>🔊</span> High-Definition Audio Stream
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Bar Info */}
+                <div className="w-full flex items-center justify-between text-[11px] text-slate-300 pt-2 border-t border-white/10">
+                  <span className="truncate max-w-[200px] sm:max-w-xs">{title}</span>
+                  {onExpand && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onExpand(); }}
+                      className="text-[#D4AF37] hover:underline font-bold flex items-center gap-1"
+                    >
+                      <span>⛶</span> Cinema Mode
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Error / Fallback State */}
+            {hasError && (
+              <div className="absolute inset-0 z-30 bg-black/90 p-6 flex flex-col items-center justify-center text-center space-y-3">
+                <span className="text-3xl">⚠️</span>
+                <div className="text-sm font-bold text-white">Stream Standby</div>
+                <p className="text-xs text-slate-400 max-w-xs">
+                  Video media stream is ready. Tap retry or open in fullscreen mode.
+                </p>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => { setHasError(false); if(videoRef.current) videoRef.current.load(); }}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#D4AF37] text-[#04070D]"
+                  >
+                    Retry Stream
+                  </button>
+                  {onExpand && (
+                    <button 
+                      onClick={onExpand}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#111A2E] text-white border border-[#D4AF37]/40"
+                    >
+                      Fullscreen Mode
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     function App() {
       // Global State
       const [currency, setCurrency] = useState('LKR'); // 'LKR' or 'USD' (1 USD = 300 LKR)
@@ -567,7 +743,7 @@
                 onClick={() => { setViewMode('portal'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 title="Agroventures Premier Circle - Western Province Division"
               >
-                <AgroventuresPremierLogoVector className="h-11 sm:h-12 w-auto shrink-0 filter drop-shadow-[0_2px_8px_rgba(212,175,55,0.25)] transition-transform duration-300 group-hover:scale-105" />
+                <AgroventuresPremierLogoVector className="h-9 sm:h-12 max-w-[180px] xs:max-w-[220px] sm:max-w-none w-auto shrink-0 filter drop-shadow-[0_2px_8px_rgba(212,175,55,0.25)] transition-transform duration-300 group-hover:scale-105" />
               </div>
 
               {/* DESKTOP NAVIGATION LINKS */}
@@ -701,7 +877,7 @@
                   </div>
 
                   {/* Primary Call To Actions */}
-                  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 pt-2 max-w-xl sm:max-w-none mx-auto">
                     <a 
                       href="#plans" 
                       className="px-6 py-3.5 rounded-xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] hover:opacity-95 shadow-gold-glow transition active:scale-95 flex items-center gap-2"
@@ -838,20 +1014,27 @@
                         Explore our end-to-end commercial agricultural model. Discover how our 645+ agronomists manage soil telemetry, precision shade netting, hand-pollination, and Bourbon curing.
                       </p>
 
-                      {/* Video Player Container */}
-                      <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-[#D4AF37]/40 group shadow-inner">
-                        <video 
-                          className="w-full h-full object-cover"
-                          controls
-                          playsInline
-                          preload="metadata"
-                        >
-                          <source src="./assets/videos/service-overview.mp4" type="video/mp4" />
-                          <source src="./Assets/videos/service-overview.mp4" type="video/mp4" />
-                          <source src="./Assets/Our Sevice Portfolio/Service Overview - Core Offering.mp4" type="video/mp4" />
-                          Your browser does not support HTML5 video playback.
-                        </video>
-                      </div>
+                      {/* Interactive Luxury Video Player */}
+                      <LuxuryVideoPlayer
+                        videoFile="service-overview.mp4"
+                        posterFile="service-overview-poster.jpg"
+                        title="Service Overview: Turnkey Commercial Management"
+                        duration="0:56"
+                        badge="OPERATIONAL BLUEPRINT • ISO 22000:2018"
+                        onExpand={() => setVideoModal({
+                          title: "Service Overview: Turnkey Commercial Management",
+                          src: "./Assets/videos/service-overview.mp4",
+                          fallbackSrc: "./assets/videos/service-overview.mp4",
+                          poster: "./Assets/videos/service-overview-poster.jpg",
+                          badge: "OPERATIONAL BLUEPRINT • ISO 22000:2018 AUDITED",
+                          highlights: [
+                            "CEA Polytunnel infrastructure with automated IoT micro-drip fertigation",
+                            "Expert hand-pollination of Vanilla planifolia by 645+ agronomists",
+                            "Enzymatic Bourbon curing achieving 1.8%–2.2% export-grade vanillin",
+                            "100% turnkey passive asset management for deeded investors"
+                          ]
+                        })}
+                      />
 
                       {/* Core Highlights */}
                       <div className="space-y-2 pt-2 text-xs text-slate-300">
@@ -902,20 +1085,27 @@
                         Follow a real client allocation from freehold title deed registration at the Matale Land Registry through unbroken 25% annual rental disbursements and final 150% capital repurchase.
                       </p>
 
-                      {/* Video Player Container */}
-                      <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-[#D4AF37]/40 group shadow-inner">
-                        <video 
-                          className="w-full h-full object-cover"
-                          controls
-                          playsInline
-                          preload="metadata"
-                        >
-                          <source src="./assets/videos/case-study.mp4" type="video/mp4" />
-                          <source src="./Assets/videos/case-study.mp4" type="video/mp4" />
-                          <source src="./Assets/Our Sevice Portfolio/Case Study - TrueAsset Agri-Growth.mov" type="video/quicktime" />
-                          Your browser does not support HTML5 video playback.
-                        </video>
-                      </div>
+                      {/* Interactive Luxury Video Player */}
+                      <LuxuryVideoPlayer
+                        videoFile="case-study.mp4"
+                        posterFile="case-study-poster.jpg"
+                        title="Case Study: The 20-Perch Commercial Allocation Journey"
+                        duration="1:00"
+                        badge="INVESTOR AUDIT • 5-YEAR CASH CYCLE"
+                        onExpand={() => setVideoModal({
+                          title: "Case Study: The 20-Perch Commercial Allocation Journey",
+                          src: "./Assets/videos/case-study.mp4",
+                          fallbackSrc: "./assets/videos/case-study.mp4",
+                          poster: "./Assets/videos/case-study-poster.jpg",
+                          badge: "INVESTOR AUDIT • 5-YEAR CASH CYCLE",
+                          highlights: [
+                            "Registered Freehold Title Deed under client name at Matale Land Registry",
+                            "Punctual 25% p.a. monthly cash disbursements arriving every 30 days",
+                            "Contractual 150% capital repurchase at Month 60 maturity",
+                            "Full 3.75x total cash return realization backed by sovereign land"
+                          ]
+                        })}
+                      />
 
                       {/* Core Highlights */}
                       <div className="space-y-2 pt-2 text-xs text-slate-300">
@@ -1095,7 +1285,7 @@
                 <div className="flex flex-col md:flex-row items-center justify-between gap-3 glass-luxury p-3 rounded-2xl border border-[#D4AF37]/30">
                   
                   {/* Category Filter Buttons */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto py-1">
                     {[
                       { id: 'all', label: 'All (32 Locations)' },
                       { id: 'matale', label: 'Flagship Matale Belt (15)' },
@@ -1106,7 +1296,7 @@
                       <button
                         key={f.id}
                         onClick={() => setEstateFilter(f.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${estateFilter === f.id ? 'bg-[#D4AF37] text-[#04070D] shadow-sm' : 'bg-[#070C18] text-slate-300 hover:text-white hover:bg-[#111A2E]'}`}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold shrink-0 whitespace-nowrap transition ${estateFilter === f.id ? 'bg-[#D4AF37] text-[#04070D] shadow-sm' : 'bg-[#070C18] text-slate-300 hover:text-white hover:bg-[#111A2E]'}`}
                       >
                         {f.label}
                       </button>
@@ -2038,10 +2228,10 @@
           {/* =========================================================================
               STICKY MOBILE BAR (Call Advisor, WhatsApp VIP, Calculate ROI)
              ========================================================================= */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#070C18]/95 backdrop-blur-md border-t border-[#D4AF37]/30 p-2.5 flex items-center justify-between gap-2 shadow-lg">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#070C18]/95 backdrop-blur-xl border-t border-[#D4AF37]/35 px-3 pt-2 safe-bottom flex items-center justify-between gap-2 shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
             <a
               href="tel:+94784180639"
-              className="flex-1 py-2 rounded-xl bg-[#111A2E] text-white text-[11px] font-bold text-center border border-[#D4AF37]/30 flex items-center justify-center gap-1 active:scale-95 transition"
+              className="flex-1 py-2.5 rounded-xl bg-[#111A2E] hover:bg-[#1a2744] text-white text-[11px] font-bold text-center border border-[#D4AF37]/30 flex items-center justify-center gap-1.5 active:scale-95 transition shadow-sm"
             >
               <span>📞</span>
               <span>Call Advisor</span>
@@ -2049,14 +2239,14 @@
             <a
               href={getWhatsAppLink("Hello Ayaz, I am reaching out from the Agroventures Premier mobile platform for VIP allocation details.")}
               target="_blank"
-              className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] text-[11px] font-black text-center shadow-gold-glow flex items-center justify-center gap-1 active:scale-95 transition"
+              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] text-[11px] font-black text-center shadow-gold-glow flex items-center justify-center gap-1.5 active:scale-95 transition"
             >
               <span>💬</span>
               <span>WhatsApp VIP</span>
             </a>
             <a
               href="#calculator"
-              className="flex-1 py-2 rounded-xl bg-[#0B111E] text-[#D4AF37] text-[11px] font-bold text-center border border-[#D4AF37]/30 flex items-center justify-center gap-1 active:scale-95 transition"
+              className="flex-1 py-2.5 rounded-xl bg-[#0B111E] hover:bg-[#111A2E] text-[#F3E5AB] text-[11px] font-bold text-center border border-[#D4AF37]/40 flex items-center justify-center gap-1.5 active:scale-95 transition"
             >
               <span>🧮</span>
               <span>Calculate ROI</span>
@@ -2082,12 +2272,13 @@
                   </button>
                 </div>
 
-                <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-[#D4AF37]/30">
+                <div className="relative max-h-[65vh] sm:max-h-[70vh] aspect-[9/16] sm:aspect-video mx-auto bg-black rounded-2xl overflow-hidden border border-[#D4AF37]/40 flex items-center justify-center shadow-2xl">
                   <video 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     controls 
                     autoPlay
                     playsInline
+                    poster={videoModal.poster}
                   >
                     <source src={videoModal.src} type="video/mp4" />
                     {videoModal.fallbackSrc && <source src={videoModal.fallbackSrc} type="video/mp4" />}
