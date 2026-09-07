@@ -135,6 +135,71 @@
       body { background: white !important; color: black !important; }
       .page-break { page-break-after: always; }
     }
+  
+    /* =========================================================================
+       PRINT STYLES: PURE WHITE CRISP A4 LETTERHEAD FOR OFFICIAL QUOTATION
+       ========================================================================= */
+    @media print {
+      body {
+        background: #FFFFFF !important;
+        color: #0F172A !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+      }
+      .no-print, header, footer, .fixed, #vision, #leadership, #media, #governance, #estates, #plans, #advisor, #testimonials {
+        display: none !important;
+      }
+      #quotation {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+      #quotation form {
+        display: none !important;
+      }
+      #quotation-slip {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #quotation-slip-printable {
+        display: block !important;
+        background: #FFFFFF !important;
+        color: #0F172A !important;
+        border: 2px solid #D4AF37 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+        padding: 32px !important;
+        border-radius: 16px !important;
+      }
+      #quotation-slip-printable * {
+        color: #0F172A !important;
+        border-color: #CBD5E1 !important;
+        text-shadow: none !important;
+      }
+      #quotation-slip-printable .gold-gradient-text,
+      #quotation-slip-printable .text-[#D4AF37],
+      #quotation-slip-printable .text-[#F3E5AB] {
+        color: #9A7B1C !important;
+        -webkit-text-fill-color: #9A7B1C !important;
+      }
+      #quotation-slip-printable .bg-[#070C18],
+      #quotation-slip-printable .bg-[#0B111E],
+      #quotation-slip-printable .bg-[#04070D] {
+        background: #F8FAFC !important;
+      }
+      #quotation-slip-printable .bg-[#0D5C3A]/25 {
+        background: #ECFDF5 !important;
+      }
+      #quotation-slip-printable table th {
+        background: #F1F5F9 !important;
+        color: #0F172A !important;
+        border-bottom: 2px solid #D4AF37 !important;
+      }
+      #quotation-slip-printable table td {
+        border-bottom: 1px solid #E2E8F0 !important;
+      }
+    }
+
   </style>
 </head>
 <body class="selection:bg-[#D4AF37] selection:text-[#04070D] antialiased">
@@ -673,6 +738,2599 @@
       // Directory Filters
       const [estateFilter, setEstateFilter] = useState('all');
       const [estateSearch, setEstateSearch] = useState('');
+
+      
+      // =========================================================================
+      // INVESTOR QUOTATION GENERATOR STATE & ENGINE
+      // =========================================================================
+      const [quoteFullName, setQuoteFullName] = useState('');
+      const [quoteAddress, setQuoteAddress] = useState('');
+      const [quoteMobile, setQuoteMobile] = useState('');
+      const [quoteDob, setQuoteDob] = useState('');
+      const [quoteNic, setQuoteNic] = useState('');
+      const [quoteAmount, setQuoteAmount] = useState(5000000); // default 5,000,000 LKR
+      const [generatedSlip, setGeneratedSlip] = useState(null);
+      const [quoteErrors, setQuoteErrors] = useState({});
+
+      const handleGenerateQuotation = (e) => {
+        if (e) e.preventDefault();
+        
+        const errors = {};
+        if (!quoteFullName.trim()) errors.fullName = "Full name as per NIC/Passport is required";
+        if (!quoteNic.trim()) errors.nic = "NIC / Passport number is required";
+        if (!quoteMobile.trim()) errors.mobile = "Mobile / WhatsApp number is required";
+        if (!quoteAddress.trim()) errors.address = "Residential address is required";
+        if (!quoteAmount || quoteAmount < 1000000) errors.amount = "Minimum investment amount is Rs. 1,000,000";
+
+        if (Object.keys(errors).length > 0) {
+          setQuoteErrors(errors);
+          return;
+        }
+        setQuoteErrors({});
+
+        const amount = Number(quoteAmount);
+        const monthlyRental = (amount * 0.25) / 12;
+        const rental60Month = monthlyRental * 60;
+        const maturityBuyback = amount * 1.50;
+        const totalReturn = amount * 3.75;
+        const netProfit = totalReturn - amount;
+        const perches = Math.max(10, Math.round(amount / 105468));
+        
+        // Expiry date exactly 7 calendar days from current date
+        const now = new Date();
+        const expiry = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+        const expiryFormatted = expiry.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' at 23:59:59 IST';
+        const issueDateFormatted = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        
+        // Unique Quotation Ref ID format AVG-QUOTE-2026-[TIMESTAMP]
+        const timestamp = Math.floor(now.getTime() / 1000).toString().slice(-6);
+        const refId = 'AVG-QUOTE-2026-' + timestamp;
+
+        const slipData = {
+          refId,
+          issueDate: issueDateFormatted,
+          expiryDate: expiryFormatted,
+          fullName: quoteFullName.trim(),
+          address: quoteAddress.trim(),
+          mobile: quoteMobile.trim(),
+          dob: quoteDob,
+          nic: quoteNic.trim().toUpperCase(),
+          amountLkr: amount,
+          amountUsd: Math.round(amount / 300),
+          perches: perches,
+          monthlyRentalLkr: monthlyRental,
+          monthlyRentalUsd: Math.round(monthlyRental / 300),
+          rental60MonthLkr: rental60Month,
+          rental60MonthUsd: Math.round(rental60Month / 300),
+          maturityBuybackLkr: maturityBuyback,
+          maturityBuybackUsd: Math.round(maturityBuyback / 300),
+          totalReturnLkr: totalReturn,
+          totalReturnUsd: Math.round(totalReturn / 300),
+          netProfitLkr: netProfit,
+          netProfitUsd: Math.round(netProfit / 300),
+        };
+
+        setGeneratedSlip(slipData);
+        
+        // Smooth scroll to quotation slip
+        setTimeout(() => {
+          const el = document.getElementById('quotation-slip');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+      };
+
+      const getWhatsAppQuotationLink = (slip) => {
+        if (!slip) return '#';
+        const msg = '*OFFICIAL AGROVENTURES PREMIER QUOTATION*\n' +
+          'Reference ID: ' + slip.refId + '\n' +
+          'Validity: Valid for 7 Days (Until ' + slip.expiryDate + ')\n\n' +
+          '*CLIENT DETAILS:*\n' +
+          'Name: ' + slip.fullName + '\n' +
+          'NIC / Passport: ' + slip.nic + '\n' +
+          'Mobile: ' + slip.mobile + '\n' +
+          'Address: ' + slip.address + '\n\n' +
+          '*ALLOCATION & RETURN SCHEDULE:*\n' +
+          'Capital Outlay: Rs. ' + slip.amountLkr.toLocaleString() + ' (USD 
+      const [videoModal, setVideoModal] = useState(null); // { title, src, fallbackSrc, badge, highlights }
+      const [advisorModal, setAdvisorModal] = useState(false);
+      const [businessCardModal, setBusinessCardModal] = useState(false);
+      const [certModal, setCertModal] = useState(null);
+      const [chairmanMessageModal, setChairmanMessageModal] = useState(false);
+      const [hrMessageModal, setHrMessageModal] = useState(false);
+      const [aiChatOpen, setAiChatOpen] = useState(false);
+      const [deckSlide, setDeckSlide] = useState(0);
+
+      // Currency conversion helpers
+      const lkrToUsd = (lkr) => Math.round(lkr / 300);
+      const formatMoney = (amountLkr) => {
+        if (currency === 'USD') {
+          return '$' + lkrToUsd(amountLkr).toLocaleString('en-US');
+        }
+        return 'Rs. ' + Math.round(amountLkr).toLocaleString('en-US');
+      };
+      const formatMoneyCompact = (amountLkr) => {
+        if (currency === 'USD') {
+          const usd = amountLkr / 300;
+          if (usd >= 1000000) return '$' + (usd / 1000000).toFixed(2) + 'M';
+          if (usd >= 1000) return '$' + (usd / 1000).toFixed(1) + 'k';
+          return '$' + Math.round(usd);
+        }
+        if (amountLkr >= 10000000) return 'Rs. ' + (amountLkr / 10000000).toFixed(2) + ' Cr';
+        if (amountLkr >= 1000000) return 'Rs. ' + (amountLkr / 1000000).toFixed(2) + 'M';
+        if (amountLkr >= 100000) return 'Rs. ' + (amountLkr / 100000).toFixed(1) + ' Lakh';
+        return 'Rs. ' + Math.round(amountLkr).toLocaleString('en-US');
+      };
+
+      // Calculator Calculations based on customCapital
+      const calcPerches = Math.round((customCapital / 2500000) * 20);
+      const calcMonthlyRental = (customCapital * 0.25) / 12;
+      const calc60MonthRental = calcMonthlyRental * 60; // 125% of capital
+      const calcBuyback = customCapital * 1.50; // 150% capital repurchase
+      const calcTotalReturn = calc60MonthRental + calcBuyback; // 375% (3.75x)
+      const calcNetProfit = calcTotalReturn - customCapital;
+
+      // Filtered estates
+      const filteredEstates = ESTATES_DIRECTORY.filter(e => {
+        const matchesCategory = estateFilter === 'all' || e.category === estateFilter;
+        const matchesSearch = e.name.toLowerCase().includes(estateSearch.toLowerCase()) || 
+                              e.specialty.toLowerCase().includes(estateSearch.toLowerCase()) ||
+                              e.registry.toLowerCase().includes(estateSearch.toLowerCase());
+        return matchesCategory && matchesSearch;
+      });
+
+      // WhatsApp generator helper
+      const getWhatsAppLink = (message) => {
+        const phone = "94774709667";
+        return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-[#04070D] text-slate-100 font-sans relative selection:bg-[#D4AF37] selection:text-[#04070D]">
+          
+          {/* =========================================================================
+              TOP NAVIGATION HEADER
+             ========================================================================= */}
+          <header className="sticky top-0 z-40 bg-[#0B111E]/95 backdrop-blur-md border-b border-[#D4AF37]/25 shadow-md no-print transition-all duration-200">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 h-20 flex items-center justify-between gap-2 sm:gap-4">
+              
+              {/* BRAND LOGO (PURE INLINE SVG VECTOR) */}
+              <div 
+                className="flex items-center cursor-pointer py-1 group" 
+                onClick={() => { setViewMode('portal'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                title="Agroventures Premier Circle - Western Province Division"
+              >
+                <AgroventuresPremierLogoVector className="h-9 sm:h-12 max-w-[180px] xs:max-w-[220px] sm:max-w-none w-auto shrink-0 filter drop-shadow-[0_2px_8px_rgba(212,175,55,0.25)] transition-transform duration-300 group-hover:scale-105" />
+              </div>
+
+              {/* DESKTOP NAVIGATION LINKS */}
+              <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 text-xs font-semibold tracking-wider text-slate-300">
+                <a href="#vision" className="px-2 py-1.5 rounded-lg hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">Vision</a>
+                <a href="#leadership" className="px-2 py-1.5 rounded-lg hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">Leadership</a>
+                <a href="#media" className="px-2 py-1.5 rounded-lg hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">Media Hub</a>
+                <a href="#governance" className="px-2 py-1.5 rounded-lg hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">Governance</a>
+                <a href="#estates" className="px-2 py-1.5 rounded-lg hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">Estates (24)</a>
+                <a href="#plans" className="px-2 py-1.5 rounded-lg hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">Portfolios</a>
+                <a href="#quotation" className="px-2.5 py-1.5 rounded-lg text-[#F3E5AB] bg-[#D4AF37]/15 border border-[#D4AF37]/40 hover:bg-[#D4AF37] hover:text-[#04070D] transition font-bold">Quotation</a>
+                <a href="#testimonials" className="px-2 py-1.5 rounded-lg hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">Investors</a>
+                <a href="#advisor" className="px-2 py-1.5 rounded-lg hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">Advisor</a>
+              </nav>
+
+              {/* ACTION CONTROLS & CURRENCY TOGGLE */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                
+                {/* Institutional View Switcher Button (Desktop) */}
+                <div className="hidden sm:flex items-center bg-[#070C18] p-1 rounded-xl border border-[#D4AF37]/30 text-xs">
+                  <button 
+                    onClick={() => setViewMode('portal')} 
+                    className={`px-2.5 py-1 rounded-lg font-bold transition ${viewMode === 'portal' ? 'bg-[#D4AF37] text-[#04070D] shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Portal
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('deck')} 
+                    className={`px-2.5 py-1 rounded-lg font-bold transition ${viewMode === 'deck' ? 'bg-[#D4AF37] text-[#04070D] shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    10-Slide Deck
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('prospectus')} 
+                    className={`px-2.5 py-1 rounded-lg font-bold transition ${viewMode === 'prospectus' ? 'bg-[#D4AF37] text-[#04070D] shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Prospectus
+                  </button>
+                </div>
+
+                {/* Live LKR ⇄ USD Currency Switcher */}
+                <button
+                  onClick={() => setCurrency(currency === 'LKR' ? 'USD' : 'LKR')}
+                  title="Toggle Currency (Exchange Rate: $1 = Rs. 300)"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold font-data bg-[#070C18] hover:bg-[#111A2E] text-[#D4AF37] border border-[#D4AF37]/40 shadow-sm transition active:scale-95"
+                >
+                  <span className="text-[10px] text-slate-400">CURRENCY</span>
+                  <span className="bg-[#D4AF37] text-[#04070D] px-1.5 py-0.5 rounded text-[11px] font-extrabold">{currency}</span>
+                  <span className="text-[10px] text-slate-400 hidden xl:inline">($1=300)</span>
+                </button>
+
+                {/* AI Advisor Button */}
+                <button 
+                  onClick={() => setAiChatOpen(true)}
+                  className="p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-[#0D5C3A]/40 text-emerald-300 border border-emerald-500/40 hover:bg-[#0D5C3A]/60 transition"
+                  title="Open AI Data Analyst Chatbot"
+                >
+                  <span>✨</span>
+                  <span className="hidden sm:inline">AI Analyst</span>
+                </button>
+
+                {/* VIP Concierge Button */}
+                <a 
+                  href={getWhatsAppLink("Hello Ayaz, I am reaching out to Agroventures Premier Division (Western Province) for high-net-worth institutional allocation details.")}
+                  target="_blank"
+                  className="px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] hover:opacity-95 shadow-gold-glow transition active:scale-95"
+                >
+                  <span>👑</span>
+                  <span className="hidden sm:inline">VIP Concierge</span>
+                  <span className="sm:hidden">VIP</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Mobile View Sub-Bar */}
+            <div className="sm:hidden flex items-center justify-around border-t border-[#D4AF37]/15 py-1.5 px-2 bg-[#070C18] text-[11px] font-bold">
+              <button 
+                onClick={() => setViewMode('portal')} 
+                className={`px-3 py-1 rounded-lg ${viewMode === 'portal' ? 'bg-[#D4AF37] text-[#04070D]' : 'text-slate-400'}`}
+              >
+                🏛️ Main Portal
+              </button>
+              <button 
+                onClick={() => setViewMode('deck')} 
+                className={`px-3 py-1 rounded-lg ${viewMode === 'deck' ? 'bg-[#D4AF37] text-[#04070D]' : 'text-slate-400'}`}
+              >
+                📑 Master Deck
+              </button>
+              <button 
+                onClick={() => setViewMode('prospectus')} 
+                className={`px-3 py-1 rounded-lg ${viewMode === 'prospectus' ? 'bg-[#D4AF37] text-[#04070D]' : 'text-slate-400'}`}
+              >
+                📄 Prospectus
+              </button>
+            </div>
+          </header>
+
+          {/* =========================================================================
+              MAIN PORTAL CONTENT
+             ========================================================================= */}
+          {viewMode === 'portal' && (
+            <main className="flex-1 pb-24 md:pb-12 space-y-16 sm:space-y-24">
+              
+              {/* =========================================================================
+                  SECTION 2: HERO & 2030 MACRO ROADMAP
+                 ========================================================================= */}
+              <section id="vision" className="relative pt-12 sm:pt-20 pb-12 overflow-hidden border-b border-[#D4AF37]/20">
+                {/* Ambient Radial Background Glows */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#D4AF37]/10 blur-[130px] pointer-events-none rounded-full"></div>
+                <div className="absolute top-40 right-0 w-[450px] h-[450px] bg-[#0D5C3A]/15 blur-[140px] pointer-events-none rounded-full"></div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center space-y-6 sm:space-y-8">
+                  
+                  {/* Sovereign Division Badge */}
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0B111E] border border-[#D4AF37]/40 shadow-sm">
+                    <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
+                    <span className="text-[11px] sm:text-xs font-bold tracking-widest text-[#F3E5AB] uppercase">
+                      Official Western Province Premier Division • Matale Freehold Land Titles
+                    </span>
+                  </div>
+
+                  {/* Master Display Headline */}
+                  <div className="space-y-3 max-w-5xl mx-auto">
+                    <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-serif tracking-tight text-white leading-tight">
+                      Securing Generational Wealth Through Sovereign Land & <span className="gold-gradient-text">Gourmet Vanilla Export</span>
+                    </h1>
+                    <p className="text-base sm:text-2xl font-light text-slate-300 max-w-3xl mx-auto">
+                      "You Own the Deeded Land. We Cultivate, Cure & Export."
+                    </p>
+                    <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                      Backed by 100% Registered Freehold Title Deeds in the Matale Land Registry. Enjoy guaranteed 25% annual rental yields disbursed monthly, plus a contractual 150% capital repurchase at Month 60.
+                    </p>
+                  </div>
+
+                  {/* Primary Call To Actions */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 pt-2 max-w-xl sm:max-w-none mx-auto">
+                    <a 
+                      href="#plans" 
+                      className="px-6 py-3.5 rounded-xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] hover:opacity-95 shadow-gold-glow transition active:scale-95 flex items-center gap-2"
+                    >
+                      <span>📑</span>
+                      <span>Explore Investment Portfolios</span>
+                    </a>
+                    <a 
+                      href="#media" 
+                      className="px-6 py-3.5 rounded-xl font-bold text-sm sm:text-base bg-[#0B111E] hover:bg-[#111A2E] text-[#F3E5AB] border border-[#D4AF37]/40 hover:border-[#D4AF37] transition active:scale-95 flex items-center gap-2"
+                    >
+                      <span>🎬</span>
+                      <span>Watch Operational Videos</span>
+                    </a>
+                    <a 
+                      href="#calculator" 
+                      className="px-5 py-3.5 rounded-xl font-bold text-sm sm:text-base bg-[#070C18] hover:bg-[#111A2E] text-slate-300 border border-slate-700 hover:text-white transition active:scale-95 flex items-center gap-2"
+                    >
+                      <span>🧮</span>
+                      <span>Simulate Returns ({currency})</span>
+                    </a>
+                  </div>
+
+                  {/* 2030 MACRO ROADMAP & INSTITUTIONAL METRICS BAR */}
+                  <div className="pt-8">
+                    <div className="text-[10px] sm:text-xs font-bold tracking-widest text-[#D4AF37] uppercase mb-4 text-center">
+                      2030 MACRO ROADMAP • NATIONWIDE SCALE & QUALITY ARCHITECTURE
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3 text-left">
+                      
+                      {/* Metric 1 */}
+                      <div className="p-3.5 rounded-2xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition group">
+                        <div className="text-[10px] text-slate-400 font-medium">Export Horizon</div>
+                        <div className="text-lg sm:text-xl font-black font-data text-[#D4AF37] mt-0.5 group-hover:scale-105 transition-transform">
+                          USD 1.0B
+                        </div>
+                        <div className="text-[10px] text-slate-300 mt-0.5">2030 Global Target</div>
+                      </div>
+
+                      {/* Metric 2 */}
+                      <div className="p-3.5 rounded-2xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition group">
+                        <div className="text-[10px] text-slate-400 font-medium">Agronomic Vines</div>
+                        <div className="text-lg sm:text-xl font-black font-data text-white mt-0.5 group-hover:scale-105 transition-transform">
+                          4,000,000+
+                        </div>
+                        <div className="text-[10px] text-slate-300 mt-0.5">Planned Vanilla Vines</div>
+                      </div>
+
+                      {/* Metric 3 */}
+                      <div className="p-3.5 rounded-2xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition group">
+                        <div className="text-[10px] text-slate-400 font-medium">Landed Assets</div>
+                        <div className="text-lg sm:text-xl font-black font-data text-[#D4AF37] mt-0.5 group-hover:scale-105 transition-transform">
+                          24 Estates
+                        </div>
+                        <div className="text-[10px] text-slate-300 mt-0.5">Commercial Plantations</div>
+                      </div>
+
+                      {/* Metric 4 */}
+                      <div className="p-3.5 rounded-2xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition group">
+                        <div className="text-[10px] text-slate-400 font-medium">Industrial Spine</div>
+                        <div className="text-lg sm:text-xl font-black font-data text-white mt-0.5 group-hover:scale-105 transition-transform">
+                          8 Facilities
+                        </div>
+                        <div className="text-[10px] text-slate-300 mt-0.5">Curing & Processing</div>
+                      </div>
+
+                      {/* Metric 5 */}
+                      <div className="p-3.5 rounded-2xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition group">
+                        <div className="text-[10px] text-slate-400 font-medium">Global Ranking</div>
+                        <div className="text-lg sm:text-xl font-black font-data text-emerald-400 mt-0.5 group-hover:scale-105 transition-transform">
+                          Rank #04
+                        </div>
+                        <div className="text-[10px] text-slate-300 mt-0.5">GPTW Asia Manufacturing</div>
+                      </div>
+
+                      {/* Metric 6 */}
+                      <div className="p-3.5 rounded-2xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition group">
+                        <div className="text-[10px] text-slate-400 font-medium">Audit Standard</div>
+                        <div className="text-lg sm:text-xl font-black font-data text-[#D4AF37] mt-0.5 group-hover:scale-105 transition-transform">
+                          ISO 22000
+                        </div>
+                        <div className="text-[10px] text-slate-300 mt-0.5">2018 Certified Curing</div>
+                      </div>
+
+                      {/* Metric 7 */}
+                      <div className="p-3.5 rounded-2xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition group col-span-2 md:col-span-4 lg:col-span-1">
+                        <div className="text-[10px] text-slate-400 font-medium">Investor Trust</div>
+                        <div className="text-lg sm:text-xl font-black font-data text-white mt-0.5 group-hover:scale-105 transition-transform">
+                          12,440+
+                        </div>
+                        <div className="text-[10px] text-slate-300 mt-0.5">Active Landed Clients</div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              </section>
+
+              
+              {/* =========================================================================
+                  SECTION: FOUNDER & CHAIRMAN LEADERSHIP + VISION 2030
+                 ========================================================================= */}
+              <section id="leadership" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24 space-y-8">
+                
+                <div className="text-center space-y-2 max-w-3xl mx-auto">
+                  <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold tracking-widest uppercase">
+                    FOUNDER & GROUP CHAIRMAN • VISION 2030
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black font-serif text-white">
+                    VISIONARY LEADERSHIP & <span className="gold-gradient-text">10-YEAR LEGACY</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    Founded on the bedrock of ethical agro-capitalism, deeded sovereignty, and global vanilla export excellence.
+                  </p>
+                </div>
+
+                {/* Chairman Tribute Card */}
+                <div className="rounded-3xl glass-luxury p-6 sm:p-10 border-2 border-[#D4AF37]/40 shadow-gold-glow relative overflow-hidden">
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                    
+                    {/* Left: Founder Portrait Frame */}
+                    <div className="lg:col-span-5 flex flex-col items-center text-center space-y-4">
+                      <div className="relative group cursor-pointer" onClick={() => setChairmanMessageModal(true)}>
+                        <div className="w-52 h-52 sm:w-64 sm:h-64 rounded-3xl overflow-hidden p-1.5 bg-gradient-to-tr from-[#D4AF37] via-[#FFF2C5] to-[#AA7C11] shadow-[0_0_35px_rgba(212,175,55,0.35)] transition-transform duration-300 group-hover:scale-105">
+                          <div className="w-full h-full rounded-2xl overflow-hidden bg-[#04070D]">
+                            <ResilientAssetImg 
+                              basePath="./Assets/Company Vision/" 
+                              filename="Group Chairman_s Message (Mr. Nilanga Karunarathne).png" 
+                              alt="Mr. Nilanga Karunarathne - Founder & Chairman" 
+                              className="w-full h-full object-cover object-top" 
+                            />
+                          </div>
+                        </div>
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#04070D] border border-[#D4AF37] px-4 py-1 rounded-full text-[11px] font-bold text-[#D4AF37] whitespace-nowrap shadow-md flex items-center gap-1.5">
+                          <span>🔍</span>
+                          <span>Inspect Chairman Dossier</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          onClick={() => setVideoModal({
+                            title: "Keynote Address: Mr. Nilanga Karunarathne (Group Chairman)",
+                            src: "./Assets/Company Vision/Mr. Nilanga Karunarathne - Chairman of Agroventures.mp4",
+                            fallbackSrc: "./assets/Company Vision/Mr. Nilanga Karunarathne - Chairman of Agroventures.mp4",
+                            badge: "EXECUTIVE KEYNOTE • VISION 2030",
+                            highlights: [
+                              "10-year operating milestone establishing 24 nationwide commercial estates",
+                              "Commitment to deeded freehold investor security via Matale Land Registry",
+                              "Export expansion across Europe and North America in gourmet vanilla",
+                              "Empowering 645+ agronomists and uplifting local farming communities"
+                            ]
+                          })}
+                          className="px-4 py-2 rounded-xl text-xs font-bold bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-slate-200 border border-[#D4AF37]/40 shadow-sm transition flex items-center gap-2"
+                        >
+                          <span>🎬</span>
+                          <span>Watch Chairman's Keynote Address</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Right: Chairman Message & Corporate Identifiers */}
+                    <div className="lg:col-span-7 space-y-5 text-left">
+                      <div>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-bold uppercase tracking-wider mb-2">
+                          FOUNDER & GROUP CHAIRMAN
+                        </div>
+                        <h3 className="text-2xl sm:text-3xl font-black font-serif text-white">
+                          Mr. Nilanga Karunarathne
+                        </h3>
+                        <p className="text-xs sm:text-sm font-semibold text-[#D4AF37] mt-0.5">
+                          Founder / Chairman, Agro Ventures Global Holdings
+                        </p>
+                      </div>
+
+                      {/* Formal Statement */}
+                      <blockquote className="text-xs sm:text-sm text-slate-200 italic leading-relaxed border-l-4 border-[#D4AF37] pl-4 py-1.5 bg-[#070C18]/60 rounded-r-2xl">
+                        "Our vision was clear from inception — to revolutionize Sri Lanka's agricultural landscape by fostering sustainability, empowering local farming communities, and delivering exceptional gourmet export produce to the world. Today, our 10-year operating milestone demonstrates that responsible, deed-backed agriculture creates enduring generational wealth."
+                      </blockquote>
+
+                      {/* Corporate Identifiers Bar */}
+                      <div className="pt-2">
+                        <div className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                          Corporate Identifiers Bar & Regulatory Compliance:
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                          
+                          <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800 hover:border-[#D4AF37]/40 transition">
+                            <div className="text-[10px] text-slate-400">Incorporation No</div>
+                            <div className="font-bold font-data text-white text-sm mt-0.5">PV 00253635</div>
+                            <div className="text-[9px] text-slate-500">Dept of Registrar</div>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800 hover:border-[#D4AF37]/40 transition">
+                            <div className="text-[10px] text-slate-400">Tax Identification (TIN)</div>
+                            <div className="font-bold font-data text-[#D4AF37] text-sm mt-0.5">103315880</div>
+                            <div className="text-[9px] text-slate-500">Inland Revenue Dept</div>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800 hover:border-[#D4AF37]/40 transition">
+                            <div className="text-[10px] text-slate-400">Corporate Advisor</div>
+                            <div className="font-bold text-emerald-400 text-sm mt-0.5">KPMG Sri Lanka</div>
+                            <div className="text-[9px] text-slate-500">Audit & Advisory Partner</div>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800 hover:border-[#D4AF37]/40 transition">
+                            <div className="text-[10px] text-slate-400">Quality Standard</div>
+                            <div className="font-bold font-data text-[#F3E5AB] text-sm mt-0.5">ISO 22000:2018</div>
+                            <div className="text-[9px] text-slate-500">Food Safety Certified</div>
+                          </div>
+
+                        </div>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+              </section>
+
+
+              {/* =========================================================================
+                  SECTION 3: DEDICATED MEDIA SHOWCASE (2 INFORMATIVE VIDEOS)
+                 ========================================================================= */}
+              <section id="media" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24 space-y-8">
+                
+                <div className="text-center space-y-2 max-w-3xl mx-auto">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold tracking-widest uppercase">
+                    Institutional Due Diligence Made Visual
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black font-serif text-white">
+                    TRANSPARENCY IN MOTION — <span className="gold-gradient-text">SEE HOW WE WORK</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    Watch our Controlled-Environment Agriculture (CEA) polytunnel infrastructure and follow the exact 5-year freehold deed capital journey.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  
+                  {/* VIDEO 01: SERVICE OVERVIEW */}
+                  <div className="rounded-3xl glass-luxury p-5 sm:p-7 border border-[#D4AF37]/35 shadow-[0_0_35px_rgba(212,175,55,0.15)] flex flex-col justify-between space-y-5 hover:border-[#D4AF37] transition-all">
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-[10px] sm:text-xs font-bold font-data bg-[#D4AF37]/15 text-[#F3E5AB] border border-[#D4AF37]/40 px-3 py-1 rounded-full">
+                          OPERATIONAL BLUEPRINT • ISO 22000:2018 AUDITED
+                        </span>
+                        <span className="text-xs text-slate-400 font-data">1080p Cinema Master</span>
+                      </div>
+                      
+                      <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
+                        VIDEO 01: Service Overview ("How We Work: Turnkey Commercial Management")
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-300">
+                        Explore our end-to-end commercial agricultural model. Discover how our 645+ agronomists manage soil telemetry, precision shade netting, hand-pollination, and Bourbon curing.
+                      </p>
+
+                      {/* Interactive Luxury Video Player */}
+                      <LuxuryVideoPlayer
+                        videoFile="service-overview.mp4"
+                        posterFile="service-overview-poster.jpg"
+                        title="Service Overview: Turnkey Commercial Management"
+                        duration="0:56"
+                        badge="OPERATIONAL BLUEPRINT • ISO 22000:2018"
+                        onExpand={() => setVideoModal({
+                          title: "Service Overview: Turnkey Commercial Management",
+                          src: "./Assets/videos/service-overview.mp4",
+                          fallbackSrc: "./assets/videos/service-overview.mp4",
+                          poster: "./Assets/videos/service-overview-poster.jpg",
+                          badge: "OPERATIONAL BLUEPRINT • ISO 22000:2018 AUDITED",
+                          highlights: [
+                            "CEA Polytunnel infrastructure with automated IoT micro-drip fertigation",
+                            "Expert hand-pollination of Vanilla planifolia by 645+ agronomists",
+                            "Enzymatic Bourbon curing achieving 1.8%–2.2% export-grade vanillin",
+                            "100% turnkey passive asset management for deeded investors"
+                          ]
+                        })}
+                      />
+
+                      {/* Core Highlights */}
+                      <div className="space-y-2 pt-2 text-xs text-slate-300">
+                        <div className="font-bold text-[#D4AF37] text-xs uppercase tracking-wider">Core Operational Highlights:</div>
+                        <ul className="space-y-1.5 list-disc list-inside text-slate-300">
+                          <li><strong>Controlled-Environment Agriculture (CEA):</strong> State-of-the-art polytunnels & IoT micro-drip fertigation.</li>
+                          <li><strong>Manual Hand-Pollination:</strong> 645+ trained agronomists pollinating Vanilla planifolia blossoms daily.</li>
+                          <li><strong>Traditional Bourbon Enzymatic Curing:</strong> Achieving 1.8%–2.2% vanillin purity for European export.</li>
+                          <li><strong>Zero Agricultural Labor:</strong> Institutional investors enjoy complete passive turn-key ownership.</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setVideoModal({
+                        title: "Service Overview: Turnkey Commercial Management",
+                        src: "./assets/videos/service-overview.mp4",
+                        fallbackSrc: "./Assets/Our Sevice Portfolio/Service Overview - Core Offering.mp4",
+                        badge: "OPERATIONAL BLUEPRINT • ISO 22000:2018 AUDITED",
+                        highlights: [
+                          "CEA Polytunnel infrastructure with automated IoT micro-drip fertigation",
+                          "Expert hand-pollination of Vanilla planifolia by 645+ agronomists",
+                          "Enzymatic Bourbon curing achieving 1.8%–2.2% export-grade vanillin",
+                          "100% turnkey passive asset management for deeded investors"
+                        ]
+                      })}
+                      className="w-full py-3 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] hover:opacity-95 shadow-md transition flex items-center justify-center gap-2"
+                    >
+                      <span>📺</span>
+                      <span>Watch Full-Screen Cinema Edition</span>
+                    </button>
+                  </div>
+
+                  {/* VIDEO 02: CASE STUDY */}
+                  <div className="rounded-3xl glass-luxury p-5 sm:p-7 border border-[#D4AF37]/35 shadow-[0_0_35px_rgba(212,175,55,0.15)] flex flex-col justify-between space-y-5 hover:border-[#D4AF37] transition-all">
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-[10px] sm:text-xs font-bold font-data bg-[#0D5C3A]/25 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full">
+                          INVESTOR AUDIT • 5-YEAR CASH CYCLE
+                        </span>
+                        <span className="text-xs text-slate-400 font-data">Commercial Proof</span>
+                      </div>
+                      
+                      <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
+                        VIDEO 02: Case Study ("The 20-Perch Commercial Allocation Journey")
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-300">
+                        Follow a real client allocation from freehold title deed registration at the Matale Land Registry through unbroken 25% annual rental disbursements and final 150% capital repurchase.
+                      </p>
+
+                      {/* Interactive Luxury Video Player */}
+                      <LuxuryVideoPlayer
+                        videoFile="case-study.mp4"
+                        posterFile="case-study-poster.jpg"
+                        title="Case Study: The 20-Perch Commercial Allocation Journey"
+                        duration="1:00"
+                        badge="INVESTOR AUDIT • 5-YEAR CASH CYCLE"
+                        onExpand={() => setVideoModal({
+                          title: "Case Study: The 20-Perch Commercial Allocation Journey",
+                          src: "./Assets/videos/case-study.mp4",
+                          fallbackSrc: "./assets/videos/case-study.mp4",
+                          poster: "./Assets/videos/case-study-poster.jpg",
+                          badge: "INVESTOR AUDIT • 5-YEAR CASH CYCLE",
+                          highlights: [
+                            "Registered Freehold Title Deed under client name at Matale Land Registry",
+                            "Punctual 25% p.a. monthly cash disbursements arriving every 30 days",
+                            "Contractual 150% capital repurchase at Month 60 maturity",
+                            "Full 3.75x total cash return realization backed by sovereign land"
+                          ]
+                        })}
+                      />
+
+                      {/* Core Highlights */}
+                      <div className="space-y-2 pt-2 text-xs text-slate-300">
+                        <div className="font-bold text-[#D4AF37] text-xs uppercase tracking-wider">Core Audit Milestones:</div>
+                        <ul className="space-y-1.5 list-disc list-inside text-slate-300">
+                          <li><strong>Freehold Title Deed:</strong> Registered under investor name in the Matale District Land Registry.</li>
+                          <li><strong>Punctual Rental Yields:</strong> Guaranteed 25% annual rental disbursed directly every 30 days.</li>
+                          <li><strong>Contractual Buyback:</strong> Legally bonded 150% capital repurchase executed at Month 60.</li>
+                          <li><strong>Total Realization:</strong> Full 3.75x cash return realization verified by legal tripartite deed.</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setVideoModal({
+                        title: "Case Study: The 20-Perch Commercial Allocation Journey",
+                        src: "./assets/videos/case-study.mp4",
+                        fallbackSrc: "./Assets/Our Sevice Portfolio/Case Study - TrueAsset Agri-Growth.mov",
+                        badge: "INVESTOR AUDIT • 5-YEAR CASH CYCLE",
+                        highlights: [
+                          "Registered Freehold Title Deed under client name at Matale Land Registry",
+                          "Punctual 25% p.a. monthly cash disbursements arriving every 30 days",
+                          "Contractual 150% capital repurchase at Month 60 maturity",
+                          "Full 3.75x total cash return realization backed by sovereign land"
+                        ]
+                      })}
+                      className="w-full py-3 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] hover:opacity-95 shadow-md transition flex items-center justify-center gap-2"
+                    >
+                      <span>📺</span>
+                      <span>Watch Full-Screen Cinema Edition</span>
+                    </button>
+                  </div>
+
+                </div>
+
+                {/* Additional Client Testimonial Video Clips Row */}
+                <div className="p-4 sm:p-6 rounded-2xl glass-luxury-subtle border border-[#D4AF37]/20 flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl sm:text-3xl">🎙️</span>
+                    <div>
+                      <h4 className="text-sm sm:text-base font-bold text-white">Looking for Direct Client Video Interviews?</h4>
+                      <p className="text-xs text-slate-400">Listen to Mr. Rohan Peiris, Mr. Isuru, and Ms. Dumali Peiris discuss their deeded returns.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {VIDEO_TESTIMONIALS.map((vt, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setVideoModal({
+                          title: `Client Interview: ${vt.name} (${vt.estate})`,
+                          src: "./assets/videos/case-study.mp4",
+                          fallbackSrc: "./Assets/videos/case-study.mp4",
+                          badge: `${vt.role} • ${vt.estate}`,
+                          highlights: [
+                            vt.quote,
+                            "100% verified freehold title deed holder",
+                            "Unbroken monthly disbursements into Hatton National Bank or Sampath Bank",
+                            "Tour of Matale curing facilities and ongoing crop yield"
+                          ]
+                        })}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-slate-300 border border-[#D4AF37]/30 transition"
+                      >
+                        ▶ {vt.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </section>
+
+              
+              {/* =========================================================================
+                  SECTION: HUMAN RESOURCES, OPERATIONAL SCALE & GREAT PLACE TO WORK
+                 ========================================================================= */}
+              <section id="governance" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24 space-y-8">
+                
+                <div className="text-center space-y-2 max-w-3xl mx-auto">
+                  <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold tracking-widest uppercase">
+                    CORPORATE SCALE & GOVERNANCE GRID
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black font-serif text-white">
+                    HUMAN RESOURCES & <span className="gold-gradient-text">OPERATIONAL SCALE</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    A sovereign agrarian infrastructure governed by 645+ specialists and recognized globally for ethical workplace excellence.
+                  </p>
+                </div>
+
+                {/* 4-Pillar Corporate Scale & Governance Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  
+                  {/* Pillar 1: Ranked #04 GPTW */}
+                  <div 
+                    onClick={() => setCertModal({
+                      title: "Great Place to Work™ — Rank #04 Manufacturing & Production",
+                      reg: "GPTW 2025-2026 AUDIT",
+                      file: "AgroVentures_BestWorkplaces_Manufacturing_Rank04_2026.png",
+                      desc: "Official recognition ranking Agroventures Global Holdings #04 across all manufacturing and production entities in Sri Lanka."
+                    })}
+                    className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition flex flex-col justify-between space-y-4 cursor-pointer group shadow-card-glass"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl group-hover:scale-110 transition-transform">🏆</span>
+                        <span className="text-[10px] font-bold font-data bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
+                          Rank #04
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-bold font-serif text-white group-hover:text-[#D4AF37] transition">
+                        Ranked #04 Great Place to Work™ 2025–2026
+                      </h3>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Category: Manufacturing & Production in Sri Lanka. High ethical workplace culture, employee equity, field safety, and transparent leadership.
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-[#D4AF37]/20 flex items-center justify-between text-xs text-[#D4AF37] font-semibold">
+                      <span>Inspect Audit Certificate</span>
+                      <span>→</span>
+                    </div>
+                  </div>
+
+                  {/* Pillar 2: 645+ Agronomists */}
+                  <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition flex flex-col justify-between space-y-4 shadow-card-glass">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl">🌱</span>
+                        <span className="text-[10px] font-bold font-data bg-[#D4AF37]/15 text-[#F3E5AB] border border-[#D4AF37]/40 px-2.5 py-0.5 rounded-full">
+                          4,000,000+ Vines
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-bold font-serif text-white">
+                        645+ Professional Agronomists & Field Engineers
+                      </h3>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Over 645 plantation managers, soil scientists, CEA systems engineers, and wealth advisors tending over 4M+ planned vines across 24 nationwide estates.
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-[#D4AF37]/20 text-xs text-slate-400 font-data">
+                      24 Nationwide Commercial Estates
+                    </div>
+                  </div>
+
+                  {/* Pillar 3: 10+ Years Operational Excellence */}
+                  <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition flex flex-col justify-between space-y-4 shadow-card-glass">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl">🏛️</span>
+                        <span className="text-[10px] font-bold font-data bg-[#0D5C3A]/25 text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
+                          Est. 2016
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-bold font-serif text-white">
+                        10+ Years Operational Excellence (Est. 2016)
+                      </h3>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        An unblemished decade of punctual, contractual monthly dividend disbursements to 12,440+ verified private and corporate investors.
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-[#D4AF37]/20 text-xs text-[#D4AF37] font-data font-bold">
+                      12,440+ Active Investors
+                    </div>
+                  </div>
+
+                  {/* Pillar 4: Industry Accreditations & Honors */}
+                  <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 hover:border-[#D4AF37] transition flex flex-col justify-between space-y-4 shadow-card-glass">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl">🎖️</span>
+                        <span className="text-[10px] font-bold font-data bg-[#D4AF37]/15 text-[#F3E5AB] border border-[#D4AF37]/40 px-2.5 py-0.5 rounded-full">
+                          Honors
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-bold font-serif text-white">
+                        Industry Accreditations & Honors
+                      </h3>
+                      <div className="space-y-1.5 pt-1">
+                        <div className="text-[11px] font-medium text-slate-200 flex items-center gap-1.5">
+                          <span className="text-[#D4AF37]">★</span> MLE Awards 2025 (1st Runners Up - Agriculture)
+                        </div>
+                        <div className="text-[11px] font-medium text-slate-200 flex items-center gap-1.5">
+                          <span className="text-[#D4AF37]">★</span> Asian Heroes Award 2023
+                        </div>
+                        <div className="text-[11px] font-medium text-slate-200 flex items-center gap-1.5">
+                          <span className="text-[#D4AF37]">★</span> The CEO Award 2023
+                        </div>
+                        <div className="text-[11px] font-medium text-slate-200 flex items-center gap-1.5">
+                          <span className="text-[#D4AF37]">★</span> BMPC Spices Award 2026
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-[#D4AF37]/20 text-xs text-slate-400">
+                      ISO 22000:2018 Certified
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* HR Leadership Statement Banner Bar */}
+                <div className="p-4 sm:p-6 rounded-3xl glass-luxury-subtle border border-[#D4AF37]/25 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-[#0B111E] border border-[#D4AF37]/40 flex items-center justify-center text-2xl shrink-0">
+                      👥
+                    </div>
+                    <div>
+                      <h4 className="text-sm sm:text-base font-bold text-white">Director of Human Resources Governance</h4>
+                      <p className="text-xs text-slate-400">Upholding field equity, worker healthcare, and institutional workforce standards across 24 estates.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setHrMessageModal(true)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-slate-200 border border-[#D4AF37]/30 transition shrink-0"
+                  >
+                    Inspect Director of HR's Message
+                  </button>
+                </div>
+
+              </section>
+
+
+              {/* =========================================================================
+                  SECTION 4: VERIFIED ACTIVE INVESTOR TESTIMONIALS ("STILL INVESTING")
+                 ========================================================================= */}
+              <section id="testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24 space-y-8">
+                
+                <div className="text-center space-y-2 max-w-3xl mx-auto">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold tracking-widest uppercase">
+                    Audited Institutional Trust
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black font-serif text-white">
+                    PROVEN TRACK RECORD — <span className="gold-gradient-text">TRUSTED BY 12,440+ INVESTORS</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    Real deeded landholders enjoying unbroken monthly bank distributions, backed by registered freehold titles and KPMG corporate advisory.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {TESTIMONIALS_DATA.map((t, idx) => (
+                    <div 
+                      key={idx}
+                      className="rounded-3xl glass-luxury p-6 border border-[#D4AF37]/30 hover:border-[#D4AF37] transition flex flex-col justify-between space-y-5 shadow-card-glass group"
+                    >
+                      <div className="space-y-4">
+                        {/* Investor Header */}
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-2xl bg-[#04070D] border border-[#D4AF37]/40 flex items-center justify-center text-2xl group-hover:scale-105 transition-transform">
+                            {t.avatar}
+                          </div>
+                          <div>
+                            <h3 className="text-base font-extrabold text-white">{t.name}</h3>
+                            <p className="text-xs text-[#D4AF37] font-medium">{t.title}</p>
+                            <p className="text-[11px] text-slate-400">{t.location}</p>
+                          </div>
+                        </div>
+
+                        {/* Status Badge & Allocation */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold font-data bg-[#D4AF37]/15 text-[#F3E5AB] border border-[#D4AF37]/40 px-2.5 py-0.5 rounded-full inline-block">
+                            {t.status}
+                          </span>
+                          <div className="text-xs font-semibold text-slate-300 pt-1">
+                            📍 {t.allocation}
+                          </div>
+                        </div>
+
+                        {/* Direct Quote */}
+                        <p className="text-xs sm:text-sm text-slate-300 italic leading-relaxed border-l-2 border-[#D4AF37]/60 pl-3">
+                          "{t.quote}"
+                        </p>
+                      </div>
+
+                      {/* Highlight Metric Pill */}
+                      <div className="pt-3 border-t border-[#D4AF37]/20">
+                        <div className="p-2.5 rounded-xl bg-[#070C18] border border-[#D4AF37]/30 flex flex-col justify-between">
+                          <span className="text-[11px] font-bold font-data text-[#D4AF37]">
+                            {currency === 'USD' ? t.metricUsd : t.metricLkr}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium mt-0.5">
+                            {t.subMetric}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Great Place to Work & ISO Credentials Banner */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  {CERTIFICATIONS_DATA.map((c, idx) => (
+                    <div 
+                      key={idx}
+                      onClick={() => setCertModal(c)}
+                      className="p-3.5 rounded-2xl glass-luxury-subtle border border-[#D4AF37]/25 hover:border-[#D4AF37] cursor-pointer transition flex flex-col justify-between group"
+                    >
+                      <div>
+                        <div className="text-[10px] text-emerald-400 font-bold font-data">{c.reg}</div>
+                        <div className="text-xs sm:text-sm font-bold text-white mt-1 group-hover:text-[#D4AF37] transition">{c.title}</div>
+                      </div>
+                      <span className="text-[10px] text-[#D4AF37] font-semibold mt-2 inline-flex items-center gap-1">
+                        <span>🔍 Inspect Audit</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+              </section>
+
+              {/* =========================================================================
+                  SECTION 5: 24 ESTATES & INDUSTRIAL PROCESSING DIRECTORY
+                 ========================================================================= */}
+              <section id="estates" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24 space-y-8">
+                
+                <div className="text-center space-y-2 max-w-3xl mx-auto">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold tracking-widest uppercase">
+                    Nationwide Deeded Infrastructure
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black font-serif text-white">
+                    24 ESTATES & <span className="gold-gradient-text">8 INDUSTRIAL FACILITIES</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    A multi-regional agrarian footprint covering Matale, Central Highlands, and specialized agro-industrial curing complexes.
+                  </p>
+                </div>
+
+                {/* Filter Tabs & Search Bar */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-3 glass-luxury p-3 rounded-2xl border border-[#D4AF37]/30">
+                  
+                  {/* Category Filter Buttons */}
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto py-1">
+                    {[
+                      { id: 'all', label: 'All (32 Locations)' },
+                      { id: 'matale', label: 'Flagship Matale Belt (15)' },
+                      { id: 'highlands', label: 'Central Highlands (8)' },
+                      { id: 'smart', label: 'Smart Agri Parks (2)' },
+                      { id: 'industrial', label: 'Industrial Hubs (8)' },
+                    ].map(f => (
+                      <button
+                        key={f.id}
+                        onClick={() => setEstateFilter(f.id)}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold shrink-0 whitespace-nowrap transition ${estateFilter === f.id ? 'bg-[#D4AF37] text-[#04070D] shadow-sm' : 'bg-[#070C18] text-slate-300 hover:text-white hover:bg-[#111A2E]'}`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Search Input */}
+                  <div className="w-full md:w-64 relative">
+                    <input
+                      type="text"
+                      placeholder="Search estate or factory..."
+                      value={estateSearch}
+                      onChange={(e) => setEstateSearch(e.target.value)}
+                      className="w-full px-3.5 py-1.5 rounded-xl text-xs bg-[#070C18] border border-[#D4AF37]/40 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37]"
+                    />
+                    {estateSearch && (
+                      <button 
+                        onClick={() => setEstateSearch('')} 
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Estate Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                  {filteredEstates.map((e, idx) => (
+                    <div 
+                      key={idx}
+                      className="p-5 rounded-2xl glass-luxury border border-[#D4AF37]/25 hover:border-[#D4AF37] transition flex flex-col justify-between space-y-4 group hover:shadow-gold-glow"
+                    >
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-bold font-data bg-[#D4AF37]/15 text-[#F3E5AB] border border-[#D4AF37]/35 px-2 py-0.5 rounded-full">
+                            {e.category === 'matale' ? 'Matale Belt' : e.category === 'highlands' ? 'Highlands' : e.category === 'smart' ? 'Smart Agri' : 'Industrial Processing'}
+                          </span>
+                          <span className="text-xs text-slate-400 font-data">⛰️ {e.elevation}</span>
+                        </div>
+
+                        <div>
+                          <h3 className="text-base font-extrabold text-white group-hover:text-[#D4AF37] transition">
+                            {e.name}
+                          </h3>
+                          <p className="text-xs text-slate-300 mt-1">
+                            {e.specialty}
+                          </p>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-[#070C18] border border-slate-800 text-[11px] space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Total Acreage / Size:</span>
+                            <span className="font-bold font-data text-white">{e.perches.toLocaleString()} Perches</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Title Jurisdiction:</span>
+                            <span className="font-medium text-[#D4AF37]">{e.registry}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Primary Feature:</span>
+                            <span className="text-emerald-400 font-semibold">{e.highlight}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <a
+                        href={getWhatsAppLink(`Hello Ayaz, I would like to inquire about commercial deed allocations in ${e.name}. Please send details.`)}
+                        target="_blank"
+                        className="w-full py-2 rounded-xl text-xs font-bold bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-slate-200 border border-[#D4AF37]/30 transition text-center block"
+                      >
+                        Inquire for Allocation
+                      </a>
+                    </div>
+                  ))}
+                </div>
+
+              </section>
+
+              {/* =========================================================================
+                  SECTION 6: INVESTMENT PORTFOLIOS & DYNAMIC ROI SIMULATOR
+                 ========================================================================= */}
+              <section id="plans" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24 space-y-12">
+                
+                <div className="text-center space-y-2 max-w-3xl mx-auto">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold tracking-widest uppercase">
+                    Institutional Capital Engineering
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black font-serif text-white">
+                    INVESTMENT PORTFOLIOS & <span className="gold-gradient-text">DYNAMIC ROI SIMULATOR</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    Sovereign freehold land ownership coupled with guaranteed 25% annual rental yields and 150% contractual capital buyback.
+                  </p>
+                </div>
+
+                {/* 4 PORTFOLIO TIERS OVERVIEW */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+                  
+                  {/* Plan 1: Flagship Triple Benefit Universal Plan */}
+                  <div className="p-6 rounded-3xl glass-luxury border-2 border-[#D4AF37] shadow-gold-glow flex flex-col justify-between space-y-5 relative">
+                    <div className="absolute -top-3 right-6 bg-[#D4AF37] text-[#04070D] text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider">
+                      Flagship Universal
+                    </div>
+                    <div className="space-y-3">
+                      <span className="text-2xl">🌱</span>
+                      <h3 className="text-lg font-bold font-serif text-white">Triple Benefit Universal Plan</h3>
+                      <p className="text-xs text-slate-300">
+                        The gold standard in deeded agro-industrial wealth. Deeded freehold title deed + 25% p.a. monthly cash rental + 150% maturity capital repurchase.
+                      </p>
+                      <div className="p-3 rounded-2xl bg-[#070C18] border border-[#D4AF37]/30 space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Annual Return:</span>
+                          <span className="font-bold text-[#D4AF37]">25% p.a. Monthly</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Month 60 Buyback:</span>
+                          <span className="font-bold text-white">150% of Capital</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Total Return:</span>
+                          <span className="font-bold font-data text-emerald-400">3.75x (375%)</span>
+                        </div>
+                      </div>
+                    </div>
+                    <a 
+                      href="#calculator" 
+                      className="w-full py-2.5 rounded-xl font-bold text-xs bg-[#D4AF37] text-[#04070D] hover:opacity-95 transition text-center"
+                    >
+                      Simulate Below ↓
+                    </a>
+                  </div>
+
+                  {/* Plan 2: Green Gold Harvest Plan */}
+                  <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 flex flex-col justify-between space-y-5">
+                    <div className="space-y-3">
+                      <span className="text-2xl">🌿</span>
+                      <h3 className="text-lg font-bold font-serif text-white">Green Gold Harvest Plan</h3>
+                      <p className="text-xs text-slate-300">
+                        Pure compound biological growth. Designed for investors seeking maximal terminal capital appreciation upon export canopy maturity.
+                      </p>
+                      <div className="p-3 rounded-2xl bg-[#070C18] border border-slate-800 space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Initial Outlay:</span>
+                          <span className="font-bold text-white">{formatMoney(893750)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Land Allocation:</span>
+                          <span className="font-bold text-[#D4AF37]">10 Perches Deeded</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Month 60 Realization:</span>
+                          <span className="font-bold font-data text-emerald-400">{formatMoney(4000000)} (4.47x)</span>
+                        </div>
+                      </div>
+                    </div>
+                    <a 
+                      href={getWhatsAppLink("Hello Ayaz, I would like to reserve a Green Gold Harvest Plan (Rs. 893,750 / $2,979 with Rs. 4M terminal buyback).")}
+                      target="_blank"
+                      className="w-full py-2.5 rounded-xl font-bold text-xs bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-slate-200 border border-[#D4AF37]/30 transition text-center"
+                    >
+                      Reserve via WhatsApp
+                    </a>
+                  </div>
+
+                  {/* Plan 3: Monthly Income Plan */}
+                  <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 flex flex-col justify-between space-y-5">
+                    <div className="space-y-3">
+                      <span className="text-2xl">💰</span>
+                      <h3 className="text-lg font-bold font-serif text-white">Monthly Income Plan</h3>
+                      <p className="text-xs text-slate-300">
+                        Backed by registered corporate mortgage bond security. Provides immediate predictable cash flow directly to your personal bank account every 30 days.
+                      </p>
+                      <div className="p-3 rounded-2xl bg-[#070C18] border border-slate-800 space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Tier 1 ({formatMoneyCompact(500000)}):</span>
+                          <span className="font-bold text-[#D4AF37]">{formatMoney(10416)} / month</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Tier 2 ({formatMoneyCompact(1000000)}):</span>
+                          <span className="font-bold text-[#D4AF37]">{formatMoney(20833)} / month</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Legal Security:</span>
+                          <span className="font-bold text-white">Registered Bond</span>
+                        </div>
+                      </div>
+                    </div>
+                    <a 
+                      href={getWhatsAppLink("Hello Ayaz, I am interested in the Monthly Income Plan with corporate mortgage bond security.")}
+                      target="_blank"
+                      className="w-full py-2.5 rounded-xl font-bold text-xs bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-slate-200 border border-[#D4AF37]/30 transition text-center"
+                    >
+                      Inquire Monthly Plan
+                    </a>
+                  </div>
+
+                  {/* Plan 4: Smart Expo Agri Park */}
+                  <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 flex flex-col justify-between space-y-5">
+                    <div className="space-y-3">
+                      <span className="text-2xl">🏢</span>
+                      <h3 className="text-lg font-bold font-serif text-white">Smart Expo Agri Park</h3>
+                      <p className="text-xs text-slate-300">
+                        High-tech computerized greenhouse plots with IoT climate control in Dambulla & Puttalam for institutional scale.
+                      </p>
+                      <div className="p-3 rounded-2xl bg-[#070C18] border border-slate-800 space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Allocation Size:</span>
+                          <span className="font-bold text-white">10 Perches to 1 Acre</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Investment Range:</span>
+                          <span className="font-bold text-[#D4AF37]">{formatMoneyCompact(1200000)} - {formatMoneyCompact(12000000)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Technology:</span>
+                          <span className="font-bold text-emerald-400">Automated IoT CEA</span>
+                        </div>
+                      </div>
+                    </div>
+                    <a 
+                      href={getWhatsAppLink("Hello Ayaz, I would like more information on Smart Expo Agri Park greenhouse allocations.")}
+                      target="_blank"
+                      className="w-full py-2.5 rounded-xl font-bold text-xs bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-slate-200 border border-[#D4AF37]/30 transition text-center"
+                    >
+                      Inquire Greenhouse
+                    </a>
+                  </div>
+
+                </div>
+
+                {/* =========================================================================
+                    DYNAMIC LIVE ROI CALCULATOR WIDGET
+                   ========================================================================= */}
+                <div id="calculator" className="scroll-mt-24 rounded-3xl glass-luxury p-6 sm:p-10 border border-[#D4AF37]/40 shadow-gold-glow">
+                  
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-[#D4AF37]/20 gap-3">
+                    <div>
+                      <span className="text-xs font-bold tracking-widest text-[#D4AF37] uppercase">Interactive Cash Flow Engine</span>
+                      <h3 className="text-xl sm:text-3xl font-black font-serif text-white mt-1">
+                        Triple Benefit Universal Plan: Real-Time Cash Flow Simulator
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                        Select a standard commercial tier or customize capital outlay to observe 60-month monthly disbursements and capital repurchase.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                      <span className="text-xs text-slate-400">Currency Mode:</span>
+                      <button
+                        onClick={() => setCurrency(currency === 'LKR' ? 'USD' : 'LKR')}
+                        className="px-3 py-1.5 rounded-xl font-bold text-xs font-data bg-[#04070D] border border-[#D4AF37] text-[#D4AF37]"
+                      >
+                        {currency} ($1 = Rs. 300)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Select Tier Buttons */}
+                  <div className="pt-6 space-y-3">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                      Select Pre-Configured Commercial Allocation:
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                      {TRIPLE_BENEFIT_TIERS.map((tier, idx) => (
+                        <button
+                          key={tier.id}
+                          onClick={() => {
+                            setSelectedTier(tier);
+                            setCustomCapital(tier.capitalLkr);
+                          }}
+                          className={`p-3 rounded-2xl border text-left transition ${customCapital === tier.capitalLkr ? 'bg-[#D4AF37] text-[#04070D] border-[#D4AF37] shadow-md' : 'bg-[#070C18] text-slate-300 border-[#D4AF37]/30 hover:border-[#D4AF37]'}`}
+                        >
+                          <div className="text-xs font-black">{tier.name}</div>
+                          <div className="text-xs font-data font-bold mt-0.5">{formatMoneyCompact(tier.capitalLkr)}</div>
+                          <div className="text-[10px] opacity-80">{tier.perches} Perches</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Interactive Slider */}
+                  <div className="pt-6 space-y-2">
+                    <div className="flex justify-between text-xs font-bold text-slate-300">
+                      <span>Fine-Tune Capital Outlay:</span>
+                      <span className="font-data text-[#D4AF37] text-sm">{formatMoney(customCapital)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1000000"
+                      max="100000000"
+                      step="500000"
+                      value={customCapital}
+                      onChange={(e) => setCustomCapital(Number(e.target.value))}
+                      className="w-full accent-[#D4AF37] h-2 bg-[#070C18] rounded-lg cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-500 font-data">
+                      <span>Rs. 1.0M ($3,333)</span>
+                      <span>Rs. 25M ($83,333)</span>
+                      <span>Rs. 50M ($166,667)</span>
+                      <span>Rs. 100M ($333,333)</span>
+                    </div>
+                  </div>
+
+                  {/* CALCULATED OUTPUT CARDS */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 pt-6">
+                    
+                    {/* Land Allocation */}
+                    <div className="p-4 rounded-2xl bg-[#070C18] border border-[#D4AF37]/30">
+                      <div className="text-[10px] text-slate-400 font-medium">Deeded Freehold Land</div>
+                      <div className="text-xl sm:text-2xl font-black font-data text-white mt-1">
+                        {calcPerches} Perches
+                      </div>
+                      <div className="text-[10px] text-emerald-400 font-semibold mt-1">Matale Land Registry</div>
+                    </div>
+
+                    {/* Monthly Rental */}
+                    <div className="p-4 rounded-2xl bg-[#070C18] border border-[#D4AF37]/30">
+                      <div className="text-[10px] text-slate-400 font-medium">Guaranteed Monthly Rental</div>
+                      <div className="text-xl sm:text-2xl font-black font-data text-[#D4AF37] mt-1">
+                        {formatMoney(calcMonthlyRental)}
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1">Disbursed every 30 days (25% p.a.)</div>
+                    </div>
+
+                    {/* 60-Month Collected Rental */}
+                    <div className="p-4 rounded-2xl bg-[#070C18] border border-[#D4AF37]/30">
+                      <div className="text-[10px] text-slate-400 font-medium">60-Month Rental Collected</div>
+                      <div className="text-xl sm:text-2xl font-black font-data text-white mt-1">
+                        {formatMoney(calc60MonthRental)}
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1">125% of initial principal</div>
+                    </div>
+
+                    {/* Month 60 Repurchase */}
+                    <div className="p-4 rounded-2xl bg-[#070C18] border border-[#D4AF37]/30">
+                      <div className="text-[10px] text-slate-400 font-medium">150% Maturity Buyback</div>
+                      <div className="text-xl sm:text-2xl font-black font-data text-[#D4AF37] mt-1">
+                        {formatMoney(calcBuyback)}
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1">Month 60 legal option</div>
+                    </div>
+
+                    {/* Total Cash Return */}
+                    <div className="p-4 rounded-2xl bg-[#0D5C3A]/25 border border-emerald-500/40 sm:col-span-2 lg:col-span-1">
+                      <div className="text-[10px] text-emerald-300 font-medium">Total Realization (3.75x)</div>
+                      <div className="text-xl sm:text-2xl font-black font-data text-emerald-300 mt-1">
+                        {formatMoney(calcTotalReturn)}
+                      </div>
+                      <div className="text-[10px] text-emerald-400 font-bold mt-1">
+                        Net Profit: +{formatMoney(calcNetProfit)}
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Direct WhatsApp Call To Action Button */}
+                  <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#070C18] border border-[#D4AF37]/30">
+                    <div>
+                      <div className="text-xs sm:text-sm font-bold text-white">
+                        Lock In This Exact Allocation with Senior Investment Advisor Ayaz Azeez
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        Pre-fills simulated capital ({formatMoney(customCapital)} for {calcPerches} Perches) into official WhatsApp line.
+                      </div>
+                    </div>
+
+                    <a
+                      href={getWhatsAppLink(`Hello Ayaz, I simulated an Agroventures Premier allocation of ${formatMoney(customCapital)} (${calcPerches} Perches deeded in Matale) with expected monthly rental of ${formatMoney(calcMonthlyRental)}/mo and total return of ${formatMoney(calcTotalReturn)}. Please send the reservation deed pack.`)}
+                      target="_blank"
+                      className="px-6 py-3 rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] hover:opacity-95 shadow-gold-glow transition active:scale-95 flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <span>💬</span>
+                      <span>Lock In Allocation via WhatsApp</span>
+                    </a>
+                  </div>
+
+                </div>
+
+              </section>
+
+              
+              {/* =========================================================================
+                  SECTION: INTERACTIVE INVESTOR QUOTATION GENERATOR (DYNAMIC FORM & SLIP)
+                 ========================================================================= */}
+              <section id="quotation" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24 space-y-10">
+                
+                <div className="text-center space-y-2 max-w-3xl mx-auto">
+                  <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold tracking-widest uppercase">
+                    INSTITUTIONAL ALLOCATION ESTIMATOR
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black font-serif text-white">
+                    GENERATE PERSONALIZED <span className="gold-gradient-text">INVESTMENT QUOTATION</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    Receive an official personalized financial schedule and legal deed entitlement certificate calculated under the Triple Benefit Universal Plan.
+                  </p>
+                </div>
+
+                {/* Form & Configurator Card */}
+                <div className="rounded-3xl glass-luxury p-6 sm:p-10 border border-[#D4AF37]/40 shadow-gold-glow">
+                  <form onSubmit={handleGenerateQuotation} className="space-y-6">
+                    
+                    <div className="border-b border-[#D4AF37]/20 pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-lg font-bold font-serif text-white">Investor Credential Details</h3>
+                        <p className="text-xs text-slate-400">Enter details exactly as registered in your National Identity Card or Passport.</p>
+                      </div>
+                      <span className="text-[10px] font-data bg-[#D4AF37]/15 text-[#F3E5AB] border border-[#D4AF37]/30 px-3 py-1 rounded-full">
+                        Strictly Confidential • Matale Registry Linked
+                      </span>
+                    </div>
+
+                    {/* Form Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      
+                      {/* Field 1: Full Name */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">
+                          Full Name (as per NIC / Passport) <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={quoteFullName}
+                          onChange={(e) => setQuoteFullName(e.target.value)}
+                          placeholder="e.g. Dr. Priyantha Senanayake"
+                          className="w-full px-4 py-2.5 rounded-xl text-xs bg-[#070C18] border border-[#D4AF37]/40 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition"
+                        />
+                        {quoteErrors.fullName && <p className="text-[11px] text-red-400">{quoteErrors.fullName}</p>}
+                      </div>
+
+                      {/* Field 2: NIC / Passport Number */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">
+                          NIC / Passport Number <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={quoteNic}
+                          onChange={(e) => setQuoteNic(e.target.value.toUpperCase())}
+                          placeholder="e.g. 198234509812 or N7891234"
+                          className="w-full px-4 py-2.5 rounded-xl text-xs font-data bg-[#070C18] border border-[#D4AF37]/40 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition"
+                        />
+                        {quoteErrors.nic && <p className="text-[11px] text-red-400">{quoteErrors.nic}</p>}
+                      </div>
+
+                      {/* Field 3: Mobile / WhatsApp Number */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">
+                          Mobile / WhatsApp Number <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={quoteMobile}
+                          onChange={(e) => setQuoteMobile(e.target.value)}
+                          placeholder="e.g. +94 77 123 4567 or +44 7911 123456"
+                          className="w-full px-4 py-2.5 rounded-xl text-xs font-data bg-[#070C18] border border-[#D4AF37]/40 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition"
+                        />
+                        {quoteErrors.mobile && <p className="text-[11px] text-red-400">{quoteErrors.mobile}</p>}
+                      </div>
+
+                      {/* Field 4: Date of Birth */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">
+                          Date of Birth (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={quoteDob}
+                          onChange={(e) => setQuoteDob(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl text-xs bg-[#070C18] border border-[#D4AF37]/40 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition"
+                        />
+                      </div>
+
+                      {/* Field 5: Residential Address */}
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <label className="text-xs font-bold text-slate-300">
+                          Residential Address (for Title Deed Drafting) <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={quoteAddress}
+                          onChange={(e) => setQuoteAddress(e.target.value)}
+                          placeholder="e.g. 42, Ward Place, Colombo 07 / Kensington High St, London"
+                          className="w-full px-4 py-2.5 rounded-xl text-xs bg-[#070C18] border border-[#D4AF37]/40 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition"
+                        />
+                        {quoteErrors.address && <p className="text-[11px] text-red-400">{quoteErrors.address}</p>}
+                      </div>
+
+                    </div>
+
+                    {/* Field 6: Desired Investment Amount with Quick Select Chips */}
+                    <div className="space-y-3 pt-4 border-t border-[#D4AF37]/20">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+                        <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                          Desired Investment Amount (LKR):
+                        </label>
+                        <span className="text-sm font-data font-black text-[#D4AF37]">
+                          Rs. {Number(quoteAmount).toLocaleString()} (USD \${Math.round(Number(quoteAmount) / 300).toLocaleString()})
+                        </span>
+                      </div>
+
+                      {/* Quick Select Chips */}
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                        {[
+                          { label: "1.05M (10P)", val: 1054680 },
+                          { label: "2.5M (20P)", val: 2500000 },
+                          { label: "5.0M (40P)", val: 5000000 },
+                          { label: "10.0M (90P)", val: 10000000 },
+                          { label: "25.0M (230P)", val: 25000000 },
+                          { label: "100M (940P)", val: 100000000 },
+                        ].map((chip, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setQuoteAmount(chip.val)}
+                            className={\`px-2.5 py-2 rounded-xl text-xs font-bold transition \${Number(quoteAmount) === chip.val ? 'bg-[#D4AF37] text-[#04070D] shadow-md' : 'bg-[#070C18] text-slate-300 border border-[#D4AF37]/30 hover:border-[#D4AF37]'}\`}
+                          >
+                            {chip.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Numeric Input & Slider */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center pt-2">
+                        <input
+                          type="number"
+                          min="1000000"
+                          max="100000000"
+                          step="100000"
+                          value={quoteAmount}
+                          onChange={(e) => setQuoteAmount(Number(e.target.value))}
+                          className="w-full px-4 py-2.5 rounded-xl text-xs font-data font-bold bg-[#070C18] border border-[#D4AF37]/40 text-[#D4AF37] focus:outline-none"
+                        />
+                        <input
+                          type="range"
+                          min="1000000"
+                          max="100000000"
+                          step="500000"
+                          value={quoteAmount}
+                          onChange={(e) => setQuoteAmount(Number(e.target.value))}
+                          className="w-full accent-[#D4AF37] h-2 bg-[#070C18] rounded-lg cursor-pointer"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-2 text-center">
+                      <button
+                        type="submit"
+                        className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] hover:opacity-95 shadow-gold-glow transition active:scale-95 flex items-center justify-center gap-2 mx-auto"
+                      >
+                        <span>📜</span>
+                        <span>Generate Official Investment Quotation Slip</span>
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+
+                {/* GENERATED QUOTATION SLIP (CERTIFICATE DISPLAY) */}
+                {generatedSlip && (
+                  <div id="quotation-slip" className="pt-4 scroll-mt-24">
+                    
+                    <div 
+                      id="quotation-slip-printable"
+                      className="rounded-3xl bg-gradient-to-b from-[#0B111E] to-[#04070D] p-6 sm:p-10 border-2 border-[#D4AF37] shadow-[0_0_50px_rgba(212,175,55,0.25)] relative overflow-hidden space-y-6"
+                    >
+                      {/* Background Watermark Crest */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none">
+                        <svg className="w-96 h-96" viewBox="0 0 100 100" fill="#D4AF37">
+                          <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" />
+                        </svg>
+                      </div>
+
+                      {/* Header of Slip */}
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-[#D4AF37]/30 relative z-10 text-center sm:text-left">
+                        <div className="flex items-center gap-3">
+                          <AgroventuresPremierLogoVector className="h-12 w-auto filter drop-shadow-[0_2px_8px_rgba(212,175,55,0.25)]" />
+                        </div>
+                        <div className="text-right flex flex-col items-center sm:items-end">
+                          <span className="px-3 py-1 rounded-full text-[11px] font-black font-data bg-[#D4AF37] text-[#04070D] tracking-wider uppercase">
+                            OFFICIAL QUOTATION
+                          </span>
+                          <span className="text-xs font-data text-[#D4AF37] mt-1 font-bold">
+                            Ref: {generatedSlip.refId}
+                          </span>
+                          <span className="text-[10px] text-slate-400 mt-0.5">
+                            Valid Until: {generatedSlip.expiryDate}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Client & Transaction Metadata */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs relative z-10">
+                        <div className="p-3.5 rounded-2xl bg-[#070C18] border border-slate-800">
+                          <div className="text-[10px] text-slate-400 font-medium">Investor Full Name:</div>
+                          <div className="font-bold text-white mt-0.5">{generatedSlip.fullName}</div>
+                        </div>
+                        <div className="p-3.5 rounded-2xl bg-[#070C18] border border-slate-800">
+                          <div className="text-[10px] text-slate-400 font-medium">NIC / Passport Number:</div>
+                          <div className="font-bold font-data text-[#D4AF37] mt-0.5">{generatedSlip.nic}</div>
+                        </div>
+                        <div className="p-3.5 rounded-2xl bg-[#070C18] border border-slate-800">
+                          <div className="text-[10px] text-slate-400 font-medium">Registered Contact:</div>
+                          <div className="font-bold font-data text-white mt-0.5">{generatedSlip.mobile}</div>
+                        </div>
+                        <div className="p-3.5 rounded-2xl bg-[#070C18] border border-slate-800">
+                          <div className="text-[10px] text-slate-400 font-medium">Issuance Date:</div>
+                          <div className="font-bold font-data text-white mt-0.5">{generatedSlip.issueDate}</div>
+                        </div>
+                      </div>
+
+                      {/* Residential Address Notice */}
+                      <div className="p-3 rounded-xl bg-[#070C18]/80 border border-slate-800 text-xs text-slate-300 relative z-10 flex items-center justify-between">
+                        <div>
+                          <strong className="text-[#D4AF37]">Deed Registration Domicile:</strong> {generatedSlip.address}
+                        </div>
+                        <span className="text-[10px] text-emerald-400 font-semibold hidden sm:inline">Matale District Registry Jurisdiction</span>
+                      </div>
+
+                      {/* FINANCIAL SCHEDULE TABLE */}
+                      <div className="relative z-10 overflow-x-auto">
+                        <table className="w-full text-left text-xs border border-[#D4AF37]/30 rounded-2xl overflow-hidden">
+                          <thead className="bg-[#070C18] text-[#D4AF37] uppercase text-[10px] font-bold border-b border-[#D4AF37]/30">
+                            <tr>
+                              <th className="p-3 sm:p-4">Schedule Item & Legal Covenant</th>
+                              <th className="p-3 sm:p-4 text-center">Deeded Land Extent</th>
+                              <th className="p-3 sm:p-4 text-right">LKR Value</th>
+                              <th className="p-3 sm:p-4 text-right">USD Equivalent (@300)</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800 font-data text-slate-200">
+                            <tr className="bg-[#0B111E]/60">
+                              <td className="p-3 sm:p-4 font-sans font-semibold">
+                                <span className="text-white block font-bold">1. Initial Capital Placement</span>
+                                <span className="text-[10px] text-slate-400">100% Freehold Sinnakkara Title Deed execution</span>
+                              </td>
+                              <td className="p-3 sm:p-4 text-center font-bold text-white">
+                                {generatedSlip.perches} Perches
+                              </td>
+                              <td className="p-3 sm:p-4 text-right font-bold text-white">
+                                Rs. {generatedSlip.amountLkr.toLocaleString()}
+                              </td>
+                              <td className="p-3 sm:p-4 text-right font-bold text-white">
+                                \${generatedSlip.amountUsd.toLocaleString()}
+                              </td>
+                            </tr>
+
+                            <tr className="bg-[#0B111E]/30">
+                              <td className="p-3 sm:p-4 font-sans font-semibold">
+                                <span className="text-[#D4AF37] block font-bold">2. Guaranteed Monthly Rental Yield</span>
+                                <span className="text-[10px] text-slate-400">25% Annual Return disbursed every 30 days directly</span>
+                              </td>
+                              <td className="p-3 sm:p-4 text-center text-slate-400">—</td>
+                              <td className="p-3 sm:p-4 text-right font-bold text-[#D4AF37]">
+                                Rs. {Math.round(generatedSlip.monthlyRentalLkr).toLocaleString()} / Mo
+                              </td>
+                              <td className="p-3 sm:p-4 text-right font-bold text-[#D4AF37]">
+                                \${generatedSlip.monthlyRentalUsd.toLocaleString()} / Mo
+                              </td>
+                            </tr>
+
+                            <tr className="bg-[#0B111E]/60">
+                              <td className="p-3 sm:p-4 font-sans font-semibold">
+                                <span className="text-white block font-bold">3. 60-Month Cumulative Rental Disbursed</span>
+                                <span className="text-[10px] text-slate-400">125% of principal distributed across 5 years</span>
+                              </td>
+                              <td className="p-3 sm:p-4 text-center text-slate-400">—</td>
+                              <td className="p-3 sm:p-4 text-right font-bold text-white">
+                                Rs. {Math.round(generatedSlip.rental60MonthLkr).toLocaleString()}
+                              </td>
+                              <td className="p-3 sm:p-4 text-right font-bold text-white">
+                                \${generatedSlip.rental60MonthUsd.toLocaleString()}
+                              </td>
+                            </tr>
+
+                            <tr className="bg-[#0B111E]/30">
+                              <td className="p-3 sm:p-4 font-sans font-semibold">
+                                <span className="text-[#D4AF37] block font-bold">4. 5-Year Capital Repurchase at Maturity</span>
+                                <span className="text-[10px] text-slate-400">Contractual 150% capital buyback at Month 60</span>
+                              </td>
+                              <td className="p-3 sm:p-4 text-center text-slate-400">—</td>
+                              <td className="p-3 sm:p-4 text-right font-bold text-[#D4AF37]">
+                                Rs. {Math.round(generatedSlip.maturityBuybackLkr).toLocaleString()}
+                              </td>
+                              <td className="p-3 sm:p-4 text-right font-bold text-[#D4AF37]">
+                                \${generatedSlip.maturityBuybackUsd.toLocaleString()}
+                              </td>
+                            </tr>
+
+                            <tr className="bg-[#0D5C3A]/25 border-t-2 border-emerald-500/50">
+                              <td className="p-3 sm:p-4 font-sans font-black">
+                                <span className="text-emerald-300 text-sm block">5. Total 5-Year Gross Realized Capital</span>
+                                <span className="text-[10px] text-emerald-400">Full 3.75x Multiple (+275% Net Realized Profit)</span>
+                              </td>
+                              <td className="p-3 sm:p-4 text-center font-bold text-emerald-300">
+                                {generatedSlip.perches} Perches
+                              </td>
+                              <td className="p-3 sm:p-4 text-right font-black text-emerald-300 text-sm sm:text-base">
+                                Rs. {Math.round(generatedSlip.totalReturnLkr).toLocaleString()}
+                              </td>
+                              <td className="p-3 sm:p-4 text-right font-black text-emerald-300 text-sm sm:text-base">
+                                \${generatedSlip.totalReturnUsd.toLocaleString()}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mandatory Terms & Covenants */}
+                      <div className="p-4 rounded-2xl bg-[#070C18] border border-[#D4AF37]/30 text-xs text-slate-300 space-y-1.5 relative z-10 leading-relaxed">
+                        <div className="font-bold text-[#D4AF37] uppercase text-[10px] tracking-wider">
+                          Mandatory Institutional Terms & Conditions:
+                        </div>
+                        <p>
+                          "This quotation is issued by Agroventures Premier Circle and remains strictly valid for 7 calendar days from issuance. Land allocations and returns are secured by transferable Freehold Title Deed registered at the Matale Land Registry and legally binding 5-Year Tripartite Cultivation Agreement."
+                        </p>
+                        <div className="text-[11px] text-slate-400 pt-1 flex flex-wrap gap-4">
+                          <span>Corporate Registration: PV 00253635</span>
+                          <span>•</span>
+                          <span>TIN: 103315880</span>
+                          <span>•</span>
+                          <span>Corporate Advisory: KPMG Sri Lanka</span>
+                          <span>•</span>
+                          <span>ISO 22000:2018 Certified</span>
+                        </div>
+                      </div>
+
+                      {/* Official Signatures Row */}
+                      <div className="pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10 text-xs">
+                        <div>
+                          <div className="font-bold text-white">Issued By Executive Advisory:</div>
+                          <div className="text-slate-300 mt-1 font-serif font-bold text-sm">Ayaz Azeez</div>
+                          <div className="text-slate-400 text-[11px]">Regional Development Manager – Western Province Premier Division</div>
+                          <div className="text-[10px] text-[#D4AF37] font-data mt-0.5">Direct Line: +94 78 418 0639</div>
+                        </div>
+                        <div className="text-left sm:text-right">
+                          <div className="font-bold text-white">Corporate Seal & Jurisdiction:</div>
+                          <div className="text-[#D4AF37] mt-1 font-bold">Agro Ventures Global Holdings (Pvt) Ltd</div>
+                          <div className="text-slate-400 text-[11px]">525, Union Place, Colombo 02 • Battaramulla HQ</div>
+                          <div className="text-[10px] text-emerald-400 font-data mt-0.5">Hatton National Bank A/C: 085010031565</div>
+                        </div>
+                      </div>
+
+                      {/* TWO DIRECT ACTION BUTTONS (NO-PRINT) */}
+                      <div className="no-print pt-6 border-t border-[#D4AF37]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <button
+                          type="button"
+                          onClick={() => window.print()}
+                          className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-white border border-[#D4AF37]/40 shadow-sm transition active:scale-95 flex items-center justify-center gap-2"
+                        >
+                          <span>🖨️</span>
+                          <span>Print / Save Quotation PDF</span>
+                        </button>
+
+                        <a
+                          href={getWhatsAppQuotationLink(generatedSlip)}
+                          target="_blank"
+                          className="w-full sm:w-auto px-6 py-3 rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] hover:opacity-95 shadow-gold-glow transition active:scale-95 flex items-center justify-center gap-2"
+                        >
+                          <span>💬</span>
+                          <span>Send Quotation to Ayaz Azeez (WhatsApp)</span>
+                        </a>
+                      </div>
+
+                    </div>
+
+                  </div>
+                )}
+
+              </section>
+
+
+              {/* =========================================================================
+                  SECTION 7: LEGAL ASSURANCE & EXECUTIVE ADVISOR PROFILE
+                 ========================================================================= */}
+              <section id="advisor" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24 space-y-12">
+                
+                {/* 4-POINT LEGAL FRAMEWORK */}
+                <div className="space-y-6">
+                  <div className="text-center space-y-2 max-w-3xl mx-auto">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold tracking-widest uppercase">
+                      Absolute Sovereign Security
+                    </div>
+                    <h2 className="text-2xl sm:text-4xl font-black font-serif text-white">
+                      4-POINT <span className="gold-gradient-text">LEGAL ASSURANCE FRAMEWORK</span>
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400">
+                      Every allocation is grounded in verifiable Sri Lankan real estate title law with corporate group banking integrity.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    {/* Pillar 1 */}
+                    <div className="p-5 rounded-2xl glass-luxury border border-[#D4AF37]/30 space-y-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center text-xl text-[#D4AF37]">
+                        📜
+                      </div>
+                      <h4 className="text-base font-bold text-white">1. Freehold Title Deed</h4>
+                      <p className="text-xs text-slate-300">
+                        100% Freehold Title Deed (Sinnakkara) executed by certified notaries and registered at the official Land Registry Office of Matale under your name.
+                      </p>
+                    </div>
+
+                    {/* Pillar 2 */}
+                    <div className="p-5 rounded-2xl glass-luxury border border-[#D4AF37]/30 space-y-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center text-xl text-[#D4AF37]">
+                        🤝
+                      </div>
+                      <h4 className="text-base font-bold text-white">2. Tripartite Agreement</h4>
+                      <p className="text-xs text-slate-300">
+                        Legally binding 5-Year Turnkey Cultivation & Management Agreement contractually securing your 25% annual rental and 150% capital buyback covenants.
+                      </p>
+                    </div>
+
+                    {/* Pillar 3 */}
+                    <div className="p-5 rounded-2xl glass-luxury border border-[#D4AF37]/30 space-y-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center text-xl text-[#D4AF37]">
+                        📐
+                      </div>
+                      <h4 className="text-base font-bold text-white">3. Cadastral Survey Plan</h4>
+                      <p className="text-xs text-slate-300">
+                        Government-licensed survey plan with precise GPS boundary coordinates demarcating your individual plot within the commercial estate.
+                      </p>
+                    </div>
+
+                    {/* Pillar 4 */}
+                    <div className="p-5 rounded-2xl glass-luxury border border-[#D4AF37]/30 space-y-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center text-xl text-[#D4AF37]">
+                        🏦
+                      </div>
+                      <h4 className="text-base font-bold text-white">4. Audited Bank Channels</h4>
+                      <p className="text-xs text-slate-300">
+                        Official corporate receipting through Hatton National Bank (A/C: 085010031565) and Sampath Bank (A/C: 017311001963) with KPMG advisory oversight.
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* EXECUTIVE ADVISOR PROFILE: AYAZ AZEEZ */}
+                <div className="rounded-3xl glass-luxury p-6 sm:p-10 border-2 border-[#D4AF37]/40 shadow-gold-glow">
+                  <div className="flex flex-col lg:flex-row items-center gap-8">
+                    
+                    {/* Portrait Frame in Royal Polished Gold */}
+                    <div className="relative shrink-0">
+                      <div className="w-44 h-44 sm:w-56 sm:h-56 rounded-3xl overflow-hidden p-1.5 bg-gradient-to-tr from-[#D4AF37] via-[#FFF2C5] to-[#AA7C11] shadow-gold-glow">
+                        <div className="w-full h-full rounded-2xl overflow-hidden bg-[#04070D]">
+                          <ResilientAssetImg 
+                            basePath="./assets/" 
+                            filename="Ayaz Azeez - Potrait.jpg" 
+                            alt="Ayaz Azeez - Regional Development Manager" 
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
+                      </div>
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#04070D] border border-[#D4AF37] px-3 py-0.5 rounded-full text-[10px] font-bold text-[#D4AF37] whitespace-nowrap shadow-sm">
+                        ⭐ Premier Division
+                      </div>
+                    </div>
+
+                    {/* Executive Details & Qualifications */}
+                    <div className="flex-1 space-y-4 text-center lg:text-left">
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-wider mb-1">
+                          Personal Dedicated Private Wealth Lead
+                        </div>
+                        <h3 className="text-2xl sm:text-3xl font-black font-serif text-white">Ayaz Azeez</h3>
+                        <p className="text-sm sm:text-base font-bold text-[#F3E5AB]">
+                          Regional Development Manager – Western Province Premier Business Division
+                        </p>
+                        <p className="text-xs font-data text-slate-400 mt-1">
+                          DICT, HND (HONS), BSc (Hons) in Computer Network • Agroventures Global Holdings
+                        </p>
+                      </div>
+
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+                        "My objective is delivering absolute legal peace of mind and passive income predictability to high-net-worth individuals and diaspora families. From land title verification at the Matale Land Registry to managing your monthly disbursements, I provide dedicated end-to-end stewardship."
+                      </p>
+
+                      {/* Office & Direct Contact Matrix */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+                        <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800 text-left">
+                          <div className="text-slate-400 font-medium">Branch Office:</div>
+                          <div className="font-bold text-white">525, Union Place, Colombo 02, Sri Lanka</div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800 text-left">
+                          <div className="text-slate-400 font-medium">Corporate Headquarters:</div>
+                          <div className="font-bold text-white">253, Kaduwela Rd, Thalangama Koswatta, Battaramulla</div>
+                        </div>
+                      </div>
+
+                      {/* Direct Channels Buttons */}
+                      <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-2">
+                        <a 
+                          href="tel:+94784180639"
+                          className="px-4 py-2.5 rounded-xl font-bold text-xs bg-[#111A2E] hover:bg-[#D4AF37] hover:text-[#04070D] text-white border border-[#D4AF37]/40 transition flex items-center gap-1.5"
+                        >
+                          <span>📞</span>
+                          <span>Direct: +94 78 418 0639</span>
+                        </a>
+                        <a 
+                          href={getWhatsAppLink("Hello Ayaz, I would like to schedule a private consultation at the Union Place Premier Branch.")}
+                          target="_blank"
+                          className="px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-700 hover:bg-emerald-600 text-white transition flex items-center gap-1.5 shadow-sm"
+                        >
+                          <span>💬</span>
+                          <span>WhatsApp: +94 77 470 9667</span>
+                        </a>
+                        <button
+                          onClick={() => setBusinessCardModal(true)}
+                          className="px-4 py-2.5 rounded-xl font-bold text-xs bg-[#070C18] hover:bg-[#111A2E] text-[#D4AF37] border border-[#D4AF37]/40 transition flex items-center gap-1.5"
+                        >
+                          <span>📇</span>
+                          <span>Digital Business Card</span>
+                        </button>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+              </section>
+
+            </main>
+          )}
+
+          {/* =========================================================================
+              VIEW MODE: 10-SLIDE MASTER DECK (MASTER EDITION 2026 V2)
+             ========================================================================= */}
+          {viewMode === 'deck' && (
+            <main className="flex-1 max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-6">
+              <div className="flex items-center justify-between gap-2 border-b border-[#D4AF37]/25 pb-4">
+                <div>
+                  <span className="text-[10px] font-bold font-data text-[#D4AF37] uppercase">Institutional Collateral</span>
+                  <h2 className="text-xl sm:text-2xl font-black font-serif text-white">Master Investor Deck (10 Slides)</h2>
+                </div>
+                <button
+                  onClick={() => setViewMode('portal')}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0B111E] text-slate-300 border border-[#D4AF37]/30 hover:text-white"
+                >
+                  ← Back to Portal
+                </button>
+              </div>
+
+              {/* Slide Container */}
+              <div className="rounded-3xl glass-luxury p-6 sm:p-10 border border-[#D4AF37]/40 min-h-[460px] flex flex-col justify-between space-y-6">
+                
+                {/* Slide 0: Cover */}
+                {deckSlide === 0 && (
+                  <div className="space-y-6 text-center py-8">
+                    <AgroventuresPremierLogoVector className="h-16 w-auto mx-auto filter drop-shadow-[0_2px_12px_rgba(212,175,55,0.3)]" />
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold font-data text-[#D4AF37] uppercase tracking-widest">Master Edition 2026 V2</span>
+                      <h1 className="text-2xl sm:text-4xl font-black font-serif text-white">Institutional Investor Collateral & Operational Dossier</h1>
+                      <p className="text-sm text-slate-300">Western Province Premier Division • Matale Freehold Land & Vanilla Export</p>
+                    </div>
+                    <div className="pt-4 flex justify-center gap-3 text-xs font-data text-slate-400">
+                      <span>Ref: AGV-WP-2026</span>
+                      <span>•</span>
+                      <span>Strictly Confidential</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 1: Corporate Profile */}
+                {deckSlide === 1 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 02 • Corporate Architecture</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">Agroventures Global Holdings Profile</h2>
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                      Agroventures is Sri Lanka's premier agro-industrial corporation specializing in organic Vanilla planifolia, orthodox high-grown tea, and virgin coconut oil. Operating 24 nationwide estates and 8 processing factories.
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
+                      <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="text-slate-400">Estates</div>
+                        <div className="font-bold text-[#D4AF37] text-lg">24 Nationwide</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="text-slate-400">Agronomists</div>
+                        <div className="font-bold text-white text-lg">645+ Specialists</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="text-slate-400">GPTW Ranking</div>
+                        <div className="font-bold text-emerald-400 text-lg">Rank #04 Asia</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="text-slate-400">Food Safety</div>
+                        <div className="font-bold text-[#D4AF37] text-lg">ISO 22000:2018</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 2: The Profit Engine */}
+                {deckSlide === 2 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 03 • The Profit Engine</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">Why Gourmet Bourbon Vanilla?</h2>
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                      Vanilla is the world's second most valuable spice by weight ($400–$600/kg). Sri Lanka's central montane climate mirrors Madagascar's vanilla belt, producing elite grade beans with 1.8%–2.2% natural vanillin.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="font-bold text-[#D4AF37]">Global Deficit</div>
+                        <div className="text-slate-300 mt-1">Severe global shortage driven by natural flavor mandates in the EU and North America.</div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="font-bold text-[#D4AF37]">Controlled CEA</div>
+                        <div className="text-slate-300 mt-1">Polytunnel cultivation eliminates weather vulnerability, boosting curing yield by 40%.</div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="font-bold text-[#D4AF37]">Export Arbitrage</div>
+                        <div className="text-slate-300 mt-1">Revenues earned in hard foreign currency (USD/EUR) hedging against local inflation.</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 3: Triple Layer Protection */}
+                {deckSlide === 3 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 04 • Capital Preservation</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">Triple-Layer Capital Security Architecture</h2>
+                    <div className="space-y-2 text-xs">
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-[#D4AF37]/40">
+                        <div className="font-bold text-[#D4AF37]">Layer 1: Registered Freehold Title Deed (Sinnakkara)</div>
+                        <div className="text-slate-300 mt-0.5">Your deed is registered in your name at the Matale Land Registry. The land itself is tangible sovereign collateral.</div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-[#D4AF37]/40">
+                        <div className="font-bold text-[#D4AF37]">Layer 2: Comprehensive CEA Polytunnels & Crop Insurance</div>
+                        <div className="text-slate-300 mt-0.5">Vines are protected inside micro-fertigated polytunnels mitigating weather, pest, and climate fluctuations.</div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-[#D4AF37]/40">
+                        <div className="font-bold text-[#D4AF37]">Layer 3: Corporate Group Balance Sheet Solvency</div>
+                        <div className="text-slate-300 mt-0.5">Backed by export revenues from multi-vertical tea, coconut, and essential oil processing factories.</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 4: 5-Year Cash Flow Waterfall */}
+                {deckSlide === 4 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 05 • Returns Waterfall</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">5-Year Cash Flow & Repurchase Mechanics</h2>
+                    <div className="p-3 rounded-2xl bg-[#070C18] border border-slate-800 text-xs overflow-x-auto font-data">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="text-[#D4AF37] border-b border-slate-700">
+                            <th className="py-2">Year</th>
+                            <th>Agronomic Stage</th>
+                            <th>Rental Yield</th>
+                            <th>Cash Flow (20P Unit)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-slate-300 divide-y divide-slate-800">
+                          <tr><td className="py-1.5 font-bold">Year 1</td><td>Vegetative Establishment</td><td>25% p.a.</td><td>Rs. 625,000 ($2,083)</td></tr>
+                          <tr><td className="py-1.5 font-bold">Year 2</td><td>Canopy Maturity & Nodes</td><td>25% p.a.</td><td>Rs. 625,000 ($2,083)</td></tr>
+                          <tr><td className="py-1.5 font-bold">Year 3</td><td>Hand-Pollination Emergence</td><td>25% p.a.</td><td>Rs. 625,000 ($2,083)</td></tr>
+                          <tr><td className="py-1.5 font-bold">Year 4</td><td>First Commercial Pod Harvest</td><td>25% p.a.</td><td>Rs. 625,000 ($2,083)</td></tr>
+                          <tr><td className="py-1.5 font-bold">Year 5</td><td>Peak Harvest + 150% Buyback</td><td>25% + 150%</td><td>Rs. 6,875,000 ($22,917)</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="text-[11px] text-slate-400 flex justify-between">
+                      <span>Total Realized Cash: <strong>Rs. 9,375,000 ($31,250) on Rs. 2.5M capital</strong></span>
+                      <span className="text-emerald-400 font-bold font-data">Net Multiple: 3.75x</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 5: The 6 Universal Tiers */}
+                {deckSlide === 5 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 06 • Portfolio Matrix</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">Commercial Tier Allocations</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                      {TRIPLE_BENEFIT_TIERS.map(t => (
+                        <div key={t.id} className="p-3 rounded-xl bg-[#070C18] border border-slate-800">
+                          <div className="font-bold text-white">{t.name}</div>
+                          <div className="text-[#D4AF37] font-bold font-data mt-0.5">{formatMoney(t.capitalLkr)}</div>
+                          <div className="text-[11px] text-slate-400 mt-1">{t.perches} Perches Deeded</div>
+                          <div className="text-[11px] text-emerald-400 font-data mt-0.5">{formatMoney(t.monthlyRentalLkr)}/mo</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 6: Legal Due Diligence */}
+                {deckSlide === 6 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 07 • Title & Contracts</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">Legal Due Diligence & Survey Plans</h2>
+                    <p className="text-xs text-slate-300">
+                      All land parcels have clear pedigrees vetted by leading conveyancing attorneys. The freehold title deed is unencumbered and registered at the Matale District Land Registry.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="font-bold text-[#D4AF37]">Cadastral Survey Demarcation</div>
+                        <div className="text-slate-300 mt-1">Each plot is physically marked with permanent concrete boundary stones and GPS survey sheets.</div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="font-bold text-[#D4AF37]">Tripartite Management Warranty</div>
+                        <div className="text-slate-300 mt-1">Turnkey maintenance, crop security, and leaseback commitments are sealed under contract law.</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 7: Corporate Governance & KPMG */}
+                {deckSlide === 7 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 08 • Institutional Governance</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">Corporate Governance & Audit Oversight</h2>
+                    <p className="text-xs text-slate-300">
+                      Agroventures maintains institutional governance standards guided by external corporate advisors and ISO 22000:2018 food safety auditors.
+                    </p>
+                    <div className="p-4 rounded-xl bg-[#070C18] border border-[#D4AF37]/30 space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Corporate Advisor:</span>
+                        <span className="font-bold text-white">KPMG Sri Lanka</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Food Safety Standard:</span>
+                        <span className="font-bold text-[#D4AF37]">ISO 22000:2018 Certified</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Workplace Ranking:</span>
+                        <span className="font-bold text-emerald-400">Rank #04 Best Workplaces in Asia</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 8: Verified Banking Channels */}
+                {deckSlide === 8 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 09 • Banking & Settlement</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">Official Corporate Banking Channels</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="font-bold text-white text-sm">Hatton National Bank PLC</div>
+                        <div className="text-slate-400 text-[11px]">Battaramulla Branch • Agro Ventures Plantations (Pvt) Ltd</div>
+                        <div className="font-data text-[#D4AF37] font-bold mt-1">Corporate Current A/C: 085010031565</div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-[#070C18] border border-slate-800">
+                        <div className="font-bold text-white text-sm">Sampath Bank PLC</div>
+                        <div className="text-slate-400 text-[11px]">Gothatuwa New Town Branch • Agro Ventures Plantations (Pvt) Ltd</div>
+                        <div className="font-data text-[#D4AF37] font-bold mt-1">Corporate Current A/C: 017311001963</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide 9: Contact Advisor */}
+                {deckSlide === 9 && (
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Slide 10 • Executive Consultation</span>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white">Reserve Your Sovereign Allocation</h2>
+                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#070C18] border border-[#D4AF37]/30">
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-[#D4AF37]">
+                        <ResilientAssetImg basePath="./assets/" filename="Ayaz Azeez - Potrait.jpg" alt="Ayaz Azeez" className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <div className="text-base font-bold text-white">Ayaz Azeez</div>
+                        <div className="text-xs text-[#D4AF37]">Regional Development Manager – Western Province Premier Business Division</div>
+                        <div className="text-[11px] text-slate-400 font-data mt-0.5">Mobile: +94 78 418 0639 • WhatsApp: +94 77 470 9667</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <a 
+                        href={getWhatsAppLink("Hello Ayaz, I am viewing Slide 10 of the Master Deck and would like to proceed with deed allocation.")} 
+                        target="_blank" 
+                        className="flex-1 py-3 rounded-xl font-bold text-xs bg-[#D4AF37] text-[#04070D] text-center"
+                      >
+                        Connect on WhatsApp VIP
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slide Deck Navigation Controls */}
+                <div className="pt-4 border-t border-[#D4AF37]/20 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setDeckSlide(i)}
+                        className={`w-6 h-6 rounded-lg text-[10px] font-bold font-data transition ${deckSlide === i ? 'bg-[#D4AF37] text-[#04070D]' : 'bg-[#070C18] text-slate-400 hover:text-white'}`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setDeckSlide(p => Math.max(0, p - 1))}
+                      disabled={deckSlide === 0}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#070C18] text-slate-300 disabled:opacity-30 border border-slate-800"
+                    >
+                      ‹ Previous
+                    </button>
+                    <button
+                      onClick={() => setDeckSlide(p => Math.min(9, p + 1))}
+                      disabled={deckSlide === 9}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#D4AF37] text-[#04070D] disabled:opacity-30"
+                    >
+                      Next ›
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </main>
+          )}
+
+          {/* =========================================================================
+              VIEW MODE: PROSPECTUS DOSSIER VIEW (FULL DOCUMENT)
+             ========================================================================= */}
+          {viewMode === 'prospectus' && (
+            <main className="flex-1 max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-6">
+              <div className="flex items-center justify-between gap-2 border-b border-[#D4AF37]/25 pb-4">
+                <div>
+                  <span className="text-[10px] font-bold font-data text-[#D4AF37] uppercase">Full Institutional Dossier</span>
+                  <h2 className="text-xl sm:text-2xl font-black font-serif text-white">Comprehensive Prospectus Document</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#D4AF37] text-[#04070D]"
+                  >
+                    🖨️ Print / Save PDF
+                  </button>
+                  <button
+                    onClick={() => setViewMode('portal')}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0B111E] text-slate-300 border border-[#D4AF37]/30"
+                  >
+                    ← Portal
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-6 text-slate-300 text-xs sm:text-sm leading-relaxed">
+                <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 space-y-3">
+                  <h3 className="text-lg font-bold text-[#D4AF37]">1. Executive Summary & Macro Economic Rationale</h3>
+                  <p>
+                    Agroventures Global Holdings (Pvt) Ltd presents this Institutional Investment Prospectus for commercial Vanilla planifolia allocations in the Matale District. The program combines registered real estate freehold title deeds with turnkey agrarian export management, delivering 25% annual rental distributions and a 150% contractual capital repurchase at Month 60.
+                  </p>
+                </div>
+
+                <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 space-y-3">
+                  <h3 className="text-lg font-bold text-[#D4AF37]">2. The Triple Benefit Legal Architecture</h3>
+                  <p>
+                    Investors acquire legal freehold title (Sinnakkara) to demarcated agricultural plots within established estates. Concurrently, a 5-Year Tripartite Agreement is executed with Agroventures Plantations (Pvt) Ltd for complete farm operations, pollination, curing, and export sales.
+                  </p>
+                </div>
+
+                <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 space-y-3">
+                  <h3 className="text-lg font-bold text-[#D4AF37]">3. Banking & Settlement Protocol</h3>
+                  <p>
+                    All capital deposits are settled directly into audited corporate accounts at Hatton National Bank PLC (A/C: 085010031565) or Sampath Bank PLC (A/C: 017311001963). Official receipts, survey plans, and notarial deed drafts are issued within 14 banking days.
+                  </p>
+                </div>
+
+                <div className="p-6 rounded-3xl glass-luxury border border-[#D4AF37]/30 space-y-3">
+                  <h3 className="text-lg font-bold text-[#D4AF37]">4. Executive Advisor Contact</h3>
+                  <p>
+                    For institutional inquiries, private wealth presentations, or on-site Matale estate tours, contact Regional Development Manager <strong>Ayaz Azeez</strong> (+94 78 418 0639 / +94 77 470 9667 / ayaz@agroventuresplantations.com).
+                  </p>
+                </div>
+              </div>
+            </main>
+          )}
+
+          {/* =========================================================================
+              FOOTER
+             ========================================================================= */}
+          <footer className="no-print border-t border-[#D4AF37]/20 bg-[#070C18] text-slate-400 text-xs py-12 px-4 sm:px-6">
+            <div className="max-w-7xl mx-auto space-y-8">
+              
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-800">
+                <AgroventuresPremierLogoVector className="h-12 w-auto" />
+                <div className="flex items-center gap-3 sm:gap-4 text-xs flex-wrap">
+                  <a href="#vision" className="hover:text-[#D4AF37] transition">Vision</a>
+                  <a href="#leadership" className="hover:text-[#D4AF37] transition">Leadership</a>
+                  <a href="#media" className="hover:text-[#D4AF37] transition">Media</a>
+                  <a href="#governance" className="hover:text-[#D4AF37] transition">Governance</a>
+                  <a href="#estates" className="hover:text-[#D4AF37] transition">Estates</a>
+                  <a href="#plans" className="hover:text-[#D4AF37] transition">Portfolios</a>
+                  <a href="#quotation" className="text-[#D4AF37] font-bold hover:underline transition">Quotation</a>
+                  <a href="#advisor" className="hover:text-[#D4AF37] transition">Advisor</a>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="text-[11px] font-bold text-[#D4AF37] uppercase tracking-wider">
+                  Verified Multi-Office Footprint & Executive Advisory Coordinates:
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-[11px] leading-relaxed">
+                  <div className="p-3.5 rounded-2xl bg-[#04070D] border border-slate-800">
+                    <div className="font-bold text-white mb-0.5">Corporate Office</div>
+                    <p className="text-slate-300">Level 26, East Tower, World Trade Center (WTC), Echelon Square, Colombo 01</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-[#04070D] border border-slate-800">
+                    <div className="font-bold text-white mb-0.5">Premier Circle Division</div>
+                    <p className="text-slate-300">No. 525, Union Place, Colombo 02 (Opposite Salaka)</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-[#04070D] border border-slate-800">
+                    <div className="font-bold text-white mb-0.5">Group Headquarters</div>
+                    <p className="text-slate-300">No. 253, Kaduwela Road, Thalangama Koswatta, Battaramulla</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-[#04070D] border border-slate-800">
+                    <div className="font-bold text-white mb-0.5">Heritage Office</div>
+                    <p className="text-slate-300">No. 48, Sir Marcus Fernando Mawatha, Colombo 07</p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-[#0B111E] border border-[#D4AF37]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                  <div>
+                    <span className="font-bold text-white">Executive Advisory: </span>
+                    <span className="text-[#F3E5AB]">Ayaz Azeez (Regional Development Manager)</span>
+                    <span className="text-slate-400 text-[11px] block sm:inline sm:ml-2">Direct: +94 78 418 0639 • WhatsApp: +94 77 470 9667</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <a href="tel:+94784180639" className="px-3 py-1.5 rounded-lg bg-[#111A2E] text-white font-bold border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-[#04070D] transition text-[11px]">
+                      Call Direct
+                    </a>
+                    <a href="https://wa.me/94774709667" target="_blank" className="px-3 py-1.5 rounded-lg bg-[#D4AF37] text-[#04070D] font-black hover:opacity-90 transition text-[11px]">
+                      WhatsApp VIP
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-500">
+                <span>© {new Date().getFullYear()} Agroventures Premier Circle. All rights reserved. Confidential institutional platform.</span>
+                <span>ISO 22000:2018 Certified • Great Place to Work® #04 Manufacturing</span>
+              </div>
+
+            </div>
+          </footer>
+
+          {/* =========================================================================
+              STICKY MOBILE BAR (Call Advisor, WhatsApp VIP, Calculate ROI)
+             ========================================================================= */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#070C18]/95 backdrop-blur-xl border-t border-[#D4AF37]/35 px-2 pt-2 safe-bottom flex items-center justify-between gap-1.5 shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
+            <a
+              href="tel:+94784180639"
+              className="flex-1 py-2 rounded-xl bg-[#111A2E] text-white text-[10px] font-bold text-center border border-[#D4AF37]/30 flex items-center justify-center gap-1 active:scale-95 transition"
+            >
+              <span>📞</span>
+              <span>Call</span>
+            </a>
+            <a
+              href="#quotation"
+              className="flex-1 py-2 rounded-xl bg-[#0B111E] text-[#F3E5AB] text-[10px] font-bold text-center border border-[#D4AF37]/40 flex items-center justify-center gap-1 active:scale-95 transition"
+            >
+              <span>📜</span>
+              <span>Quote</span>
+            </a>
+            <a
+              href="#calculator"
+              className="flex-1 py-2 rounded-xl bg-[#0B111E] text-slate-300 text-[10px] font-bold text-center border border-slate-700 flex items-center justify-center gap-1 active:scale-95 transition"
+            >
+              <span>🧮</span>
+              <span>ROI</span>
+            </a>
+            <a
+              href={getWhatsAppLink("Hello Ayaz, I am reaching out from the Agroventures Premier mobile platform for VIP allocation details.")}
+              target="_blank"
+              className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#FFF2C5] via-[#D4AF37] to-[#AA7C11] text-[#04070D] text-[10px] font-black text-center shadow-gold-glow flex items-center justify-center gap-1 active:scale-95 transition"
+            >
+              <span>💬</span>
+              <span>WhatsApp</span>
+            </a>
+          </div>
+
+          {/* =========================================================================
+              MODAL 1: FULL-SCREEN VIDEO CINEMA MODAL
+             ========================================================================= */}
+          {videoModal && (
+            <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="w-full max-w-4xl bg-[#070C18] border border-[#D4AF37]/50 rounded-3xl overflow-hidden shadow-2xl space-y-4 p-4 sm:p-6">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <div>
+                    <span className="text-[10px] font-bold font-data text-[#D4AF37] uppercase">{videoModal.badge}</span>
+                    <h3 className="text-base sm:text-xl font-bold text-white">{videoModal.title}</h3>
+                  </div>
+                  <button 
+                    onClick={() => setVideoModal(null)}
+                    className="w-8 h-8 rounded-full bg-slate-800 text-white font-bold hover:bg-[#D4AF37] hover:text-[#04070D] transition flex items-center justify-center"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="relative max-h-[65vh] sm:max-h-[70vh] aspect-[9/16] sm:aspect-video mx-auto bg-black rounded-2xl overflow-hidden border border-[#D4AF37]/40 flex items-center justify-center shadow-2xl">
+                  <video 
+                    className="w-full h-full object-contain"
+                    controls 
+                    autoPlay
+                    playsInline
+                    poster={videoModal.poster}
+                  >
+                    <source src={videoModal.src} type="video/mp4" />
+                    {videoModal.fallbackSrc && <source src={videoModal.fallbackSrc} type="video/mp4" />}
+                    Your browser does not support video playback.
+                  </video>
+                </div>
+
+                <div className="space-y-1 text-xs text-slate-300 pt-1">
+                  <div className="font-bold text-[#D4AF37]">Key Institutional Observations:</div>
+                  <ul className="list-disc list-inside space-y-1 text-slate-400">
+                    {videoModal.highlights.map((h, i) => (
+                      <li key={i}>{h}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 2: DIGITAL BUSINESS CARD MODAL (AYAZ AZEEZ)
+             ========================================================================= */}
+          {businessCardModal && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="w-full max-w-md bg-[#070C18] border-2 border-[#D4AF37] rounded-3xl p-6 shadow-2xl space-y-4 text-center relative">
+                <button 
+                  onClick={() => setBusinessCardModal(false)}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-base"
+                >
+                  ✕
+                </button>
+
+                <AgroventuresPremierLogoVector className="h-10 w-auto mx-auto filter drop-shadow-[0_2px_8px_rgba(212,175,55,0.25)]" />
+                
+                <div className="w-24 h-24 rounded-2xl overflow-hidden mx-auto border-2 border-[#D4AF37] shadow-gold-glow">
+                  <ResilientAssetImg basePath="./assets/" filename="Ayaz Azeez - Potrait.jpg" alt="Ayaz Azeez" className="w-full h-full object-cover" />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold text-white font-serif">Ayaz Azeez</h3>
+                  <p className="text-xs text-[#D4AF37] font-semibold">Regional Development Manager</p>
+                  <p className="text-[11px] text-slate-400">Western Province Premier Business Division</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-[#04070D] border border-slate-800 text-xs space-y-1.5 text-left font-data">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Mobile:</span>
+                    <a href="tel:+94784180639" className="text-white hover:text-[#D4AF37] font-bold">+94 78 418 0639</a>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">WhatsApp:</span>
+                    <a href={getWhatsAppLink("Hello Ayaz, I am adding your contact via the Premier digital business card.")} target="_blank" className="text-emerald-400 font-bold">+94 77 470 9667</a>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Email:</span>
+                    <span className="text-slate-300">ayaz@agroventuresplantations.com</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Office:</span>
+                    <span className="text-slate-300">525, Union Place, Colombo 02</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <a 
+                    href="assets/My Details/Business Card.JPG" 
+                    target="_blank" 
+                    className="w-full py-2.5 rounded-xl font-bold text-xs bg-[#D4AF37] text-[#04070D] block"
+                  >
+                    View Official Card Image
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 3: CERTIFICATION AUDIT LIGHTBOX
+             ========================================================================= */}
+          {certModal && (
+            <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="w-full max-w-2xl bg-[#070C18] border border-[#D4AF37] rounded-3xl p-6 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <div>
+                    <span className="text-[10px] font-bold font-data text-emerald-400">{certModal.reg}</span>
+                    <h3 className="text-base sm:text-lg font-bold text-white">{certModal.title}</h3>
+                  </div>
+                  <button 
+                    onClick={() => setCertModal(null)}
+                    className="text-slate-400 hover:text-white font-bold text-base p-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="max-h-[60vh] overflow-auto rounded-xl bg-black border border-slate-800 flex items-center justify-center p-2">
+                  <ResilientAssetImg 
+                    basePath="./assets/Certifications/" 
+                    filename={certModal.file} 
+                    alt={certModal.title} 
+                    className="max-h-[55vh] w-auto object-contain rounded-lg"
+                  />
+                </div>
+
+                <p className="text-xs text-slate-300">{certModal.desc}</p>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 4: AI DATA ANALYST CHATBOT
+             ========================================================================= */}
+          {aiChatOpen && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="w-full max-w-lg bg-[#070C18] border-2 border-[#D4AF37] rounded-3xl p-6 shadow-2xl space-y-4 flex flex-col h-[520px]">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <h3 className="text-base font-bold text-white">AI Data Analyst (Agroventures Premier)</h3>
+                  </div>
+                  <button 
+                    onClick={() => setAiChatOpen(false)}
+                    className="text-slate-400 hover:text-white font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-3 text-xs pr-1">
+                  <div className="p-3 rounded-2xl bg-[#111A2E] border border-[#D4AF37]/30 text-slate-200">
+                    <div className="font-bold text-[#D4AF37] mb-1">✨ Automated Intelligence Lead:</div>
+                    Welcome to the Agroventures Premier Circle Data Room. Ask me anything regarding:
+                    <ul className="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
+                      <li>Freehold Title Deed registration in the Matale Land Registry</li>
+                      <li>Triple Benefit 25% annual rental & 150% Month-60 buyback</li>
+                      <li>Agronomic CEA vanilla curing achieving 1.8%–2.2% vanillin</li>
+                      <li>Verified corporate bank accounts at HNB and Sampath Bank</li>
+                    </ul>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-[#04070D] border border-slate-800 text-slate-300">
+                    <div className="text-[10px] text-slate-500">Quick Prompt:</div>
+                    <button 
+                      onClick={() => alert("The 20-Perch Growth Unit requires Rs. 2,500,000 capital, pays Rs. 52,083/month unbroken rental, and returns Rs. 6,250,000 at Month 60 maturity for a total 3.75x cash return.")}
+                      className="text-left font-bold text-[#D4AF37] hover:underline mt-1"
+                    >
+                      "Summarize the 20-Perch Growth Unit return profile."
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800 flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Ask about deeds, yields, or vanilla export..."
+                    className="flex-1 px-3 py-2 rounded-xl text-xs bg-[#04070D] border border-[#D4AF37]/40 text-white focus:outline-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        alert("Senior Investment Advisor Ayaz Azeez is available to provide instant audited telemetry on this inquiry via WhatsApp (+94 77 470 9667).");
+                      }
+                    }}
+                  />
+                  <button 
+                    onClick={() => alert("Senior Investment Advisor Ayaz Azeez is available to provide instant audited telemetry on this inquiry via WhatsApp (+94 77 470 9667).")}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#D4AF37] text-[#04070D]"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
+ + slip.amountUsd.toLocaleString() + ')\n' +
+          'Deeded Land: ' + slip.perches + ' Perches (Freehold Sinnakkara at Matale Registry)\n' +
+          'Guaranteed Monthly Rental: Rs. ' + Math.round(slip.monthlyRentalLkr).toLocaleString() + ' / Month (Every 30 Days)\n' +
+          '60-Month Collected Rental: Rs. ' + Math.round(slip.rental60MonthLkr).toLocaleString() + '\n' +
+          'Month 60 Capital Buyback: Rs. ' + Math.round(slip.maturityBuybackLkr).toLocaleString() + ' (150% Buyback)\n' +
+          'Total 5-Year Gross Realization: Rs. ' + Math.round(slip.totalReturnLkr).toLocaleString() + ' (3.75x Multiple)\n\n' +
+          'Hello Ayaz, I have generated this official quotation. Please prepare the legal reservation deed pack for my allocation.';
+        return 'https://wa.me/94774709667?text=' + encodeURIComponent(msg);
+      };
 
       // Modals
       const [videoModal, setVideoModal] = useState(null); // { title, src, fallbackSrc, badge, highlights }
